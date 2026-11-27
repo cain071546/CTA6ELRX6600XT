@@ -1,0 +1,111 @@
+﻿cargo : warning: use of deprecated method `std::sync::atomic::Atomic::<u32>::fetch_update`: renamed to `try_update` 
+for consistency
+At line:6 char:1
++ cargo check --locked --profile diag -p victory --features diagnostics ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: use of...for consistency:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  --> crates\victory-gpu\src\object.rs:77:18
+   |
+77 |     let _ = refs.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |n| n.checked_sub(1));
+   |                  ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+77 -     let _ = refs.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |n| n.checked_sub(1));
+77 +     let _ = refs.try_update(Ordering::Relaxed, Ordering::Relaxed, |n| n.checked_sub(1));
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u32>::fetch_update`: renamed to `try_update` for 
+consistency
+   --> crates\victory-gpu\src\object.rs:137:16
+    |
+137 |     match refs.fetch_update(Ordering::AcqRel, Ordering::Acquire, |n| n.checked_sub(1)) {
+    |                ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+137 -     match refs.fetch_update(Ordering::AcqRel, Ordering::Acquire, |n| n.checked_sub(1)) {
+137 +     match refs.try_update(Ordering::AcqRel, Ordering::Acquire, |n| n.checked_sub(1)) {
+    |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u8>::fetch_update`: renamed to `try_update` for 
+consistency
+   --> crates\victory-gpu\src\titlewrite\decode.rs:404:61
+    |
+404 |             1 => u64::from(AtomicU8::from_ptr(at as *mut _).fetch_update(SeqCst, SeqCst, |v| Some(f(v.into()) as 
+u8)).ok()?),
+    |                                                             ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+404 -             1 => u64::from(AtomicU8::from_ptr(at as *mut _).fetch_update(SeqCst, SeqCst, |v| Some(f(v.into()) as 
+u8)).ok()?),
+404 +             1 => u64::from(AtomicU8::from_ptr(at as *mut _).try_update(SeqCst, SeqCst, |v| Some(f(v.into()) as 
+u8)).ok()?),
+    |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u16>::fetch_update`: renamed to `try_update` for 
+consistency
+   --> crates\victory-gpu\src\titlewrite\decode.rs:405:62
+    |
+405 |             2 => u64::from(AtomicU16::from_ptr(at as *mut _).fetch_update(SeqCst, SeqCst, |v| Some(f(v.into()) 
+as u16)).ok()?),
+    |                                                              ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+405 -             2 => u64::from(AtomicU16::from_ptr(at as *mut _).fetch_update(SeqCst, SeqCst, |v| Some(f(v.into()) 
+as u16)).ok()?),
+405 +             2 => u64::from(AtomicU16::from_ptr(at as *mut _).try_update(SeqCst, SeqCst, |v| Some(f(v.into()) as 
+u16)).ok()?),
+    |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u32>::fetch_update`: renamed to `try_update` for 
+consistency
+   --> crates\victory-gpu\src\titlewrite\decode.rs:406:62
+    |
+406 |             4 => u64::from(AtomicU32::from_ptr(at as *mut _).fetch_update(SeqCst, SeqCst, |v| Some(f(v.into()) 
+as u32)).ok()?),
+    |                                                              ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+406 -             4 => u64::from(AtomicU32::from_ptr(at as *mut _).fetch_update(SeqCst, SeqCst, |v| Some(f(v.into()) 
+as u32)).ok()?),
+406 +             4 => u64::from(AtomicU32::from_ptr(at as *mut _).try_update(SeqCst, SeqCst, |v| Some(f(v.into()) as 
+u32)).ok()?),
+    |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for 
+consistency
+   --> crates\victory-gpu\src\titlewrite\decode.rs:407:52
+    |
+407 |             _ => AtomicU64::from_ptr(at as *mut _).fetch_update(SeqCst, SeqCst, |v| Some(f(v))).ok()?,
+    |                                                    ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+407 -             _ => AtomicU64::from_ptr(at as *mut _).fetch_update(SeqCst, SeqCst, |v| Some(f(v))).ok()?,
+407 +             _ => AtomicU64::from_ptr(at as *mut _).try_update(SeqCst, SeqCst, |v| Some(f(v))).ok()?,
+    |
+
+warning: `victory-gpu` (lib) generated 6 warnings (run `cargo fix --lib -p victory-gpu` to apply 6 suggestions)
+warning: use of deprecated method `std::sync::atomic::Atomic::<usize>::fetch_update`: renamed to `try_update` for 
+consistency
+    --> crates\victory-hle\src\modules\xmem.rs:1977:14
+     |
+1977 |             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |t| {
+     |              ^^^^^^^^^^^^
+     |
+     = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+     |
+1977 -             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |t| {
+1977 +             .try_update(Ordering::Relaxed, Ordering::Relaxed, |t| {
+     |
+
+warning: `victory-hle` (lib) generated 1 warning (run `cargo fix --lib -p victory-hle` to apply 1 suggestion)
+    Finished `diag` profile [optimized + debuginfo] target(s) in 0.32s

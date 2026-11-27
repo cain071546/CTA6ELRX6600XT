@@ -119,6 +119,23 @@
 
 `[X]` Held for later: `d2e24b3` `VICTORY_HEAP_SYNC_AT_SUBMIT=1` (5 files / 458 insertions, off, timing-changing), `1e72650` `same_host_heaps` subpart only, `8625c3a` `VICTORY_TABLED_REREAD=1`, and `4cee21f` queue-site/pass-part measurement (depends on an absent `rest`/`shown` refactor). `[X]` Explicitly rejected: `e5faadb`, `50a9f7c`, `9075710`, `ee3fb52`, `185bc4c`, `a7b86676` (already present or inapplicable locally), `f5f0ec0` (RDNA4-only IDs `0x7550-0x75ff`), `f1edd66` and `2ff3e4a` as wholesale merges, plus visual/NVIDIA/DLSS/FSR/framegen and fork-branding work.
 
+## Dark-Victory-RX6600-I714700KF-VI audit and selective integration
+
+`[X]` Source: `H:\Dark-Victory-RX6600-I714700KF-VI`, committed `main f16d63da261d32bed069d1cf613c972f183e8671`; local checkout matched committed `main`. No file in that tree was edited, built, launched, or terminated. Uncommitted `agility-win10` edits and untracked `crates\victory-shader\src\emit\agility.rs`, `prebuild.log`, `run-local.ps1`, and `vendor\` were left untouched as user work. `[S]` Audit commit IDs: `b56d271d9d558af62a502277d67f7ebd0d43bc57`, `dc1a0c7eb5cafe0e02b2e2774647e4af2edb0938`, `d6dd31bcb240d25efd26dc0b6d86f01dc7976127`, `0468adfaaa03072689ea96246a50aeafe971176b`, `f16d63da261d32bed069d1cf613c972f183e8671`.
+
+`[H]` Rank-1 rationale comes from `[M]` `8gb35-agility620-warmlib` (full log `C:\Users\mrgre\AppData\Local\Temp\opencode\victory-8gb35-agility620-warmlib.log`; component evidence `C:\Users\mrgre\AppData\Local\Temp\opencode\component-8gb35-agility620-warmlib.txt`): upload buffers `17,385 MB`, PC free `581 MB`, p99 frame time `1,503.5 ms`. A large texture needing a fresh staging block should not hold smaller textures that fit existing blocks. There was no direct A/B proof before integration.
+
+| Rank | Fork commit | Local integration point | Switch/default | Risk | Disposition |
+|---|---|---|---|---|---|
+| 1 | `b56d271` upload deferral/retry | `[S]` `host.rs:1164-1172,2026-2031`; `draw.rs:2406-2409,2635-2648,2670-2679,2772`; existing `residency.rs:50,54,58` consumption retained | Default-on; `MAX_DEFERRED_UPLOADS=64`, retry at `frame+2`, existing 500 ms `upload_refused()` backoff retained | Medium | **Integrated** at active `3dd97a9`; rebuild-gated, no A/B result yet |
+| 2 | `dc1a0c7` non-visual H2a–H2g bundle | Not applied; prior audit notes only | — | Medium | **Held** for isolated later A/B |
+| 3 | `d6dd31b` StaleSpan only | Not applied; prior audit notes only | — | Medium | **Held** for isolated later A/B; watch indexing rejected |
+| 4 | `0468adf`, `f16d63d`, visual/FFX/framegen/RT/script/test-hygiene | Not applied | — | — | **Rejected** |
+
+`[X]` Active integration commit `3dd97a91b36974de352c00f1ec5c0a06aebabaed` (`Integrate b56d271 upload deferral/retry hunks`) was pushed to `cain/main`; local `HEAD` and `cain/main` match and the working tree is clean. No `VICTORY_*` setting, wrapper, `HostPolicy`, FSR, visual, FFX/framegen, RT, script, or test-hygiene change was made. No game launch; no process termination.
+
+`[X]` Validation: `C:\Users\mrgre\AppData\Local\Temp\opencode\dark-integrate-cargo-check.txt` (`check_exit=0`); `C:\Users\mrgre\AppData\Local\Temp\opencode\dark-integrate-cargo-test.txt` (`test_exit=101`, 369 passed / 4 failed in `root.rs` host root-signature tests); `C:\Users\mrgre\AppData\Local\Temp\opencode\dark-integrate-cargo-test-baseline.txt` (identical 369 passed / 4 failed after stashing the two edited files, so failures are pre-existing/environmental); `C:\Users\mrgre\AppData\Local\Temp\opencode\dark-integrate-rustfmt-check.txt` (repo-wide pre-existing style differences; no unique new diff in the inserted lines).
+
 ## What this report does not authorize
 
 - No merging of seven repositories or wholesale porting; the eight-repo watch remains fetch/ref comparison and ranked-readiness work only.
@@ -126,6 +143,7 @@
 - No treating a 5-minute zero-failure run as proof of 20-minute stability.
 - No `H:\report.txt` replacement.
 - No source edit or rebuild while `8gb30-minimal-stable` is active.
+- No further source porting after the audited six-hunk `b56d271` integration at `3dd97a9` without local evidence and explicit approval.
 
 ## Agility 1.620.2 SM 6.6 evidence and rebuild (2026-11-26)
 
