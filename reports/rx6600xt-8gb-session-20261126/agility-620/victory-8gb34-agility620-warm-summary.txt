@@ -1,0 +1,8 @@
+﻿warm --used --jobs 2 finished at 2026-11-26T21:29:43.3036946-08:00 with exit code 0.
+process_priority=BelowNormal
+cache: C:\Users\mrgre\AppData\Local\Temp\opencode\cache-8gb34-agility620
+build_sha256: 15D934F2905336A2E0E0C661AA01790D1A9FB91CA21E063D1A8C74D86A8AF699
+agility-sdk.txt: 614
+warm-done.txt lines: 2245
+warm-bad.txt lines: 0
+log: C:\Users\mrgre\AppData\Local\Temp\opencode\victory-8gb34-agility620-warm.log
