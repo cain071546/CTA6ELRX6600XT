@@ -1,0 +1,15 @@
+﻿
+
+RunId                 : 8gb36-b56d271-defer
+Log                   : C:\Users\mrgre\AppData\Local\Temp\opencode\victory-8gb36-b56d271-defer.log
+WindowCount           : 52
+NonzeroWindowCount    : 12
+MaxWaitMs             : 77.4
+MedianWaitMs          : 0
+P90WaitMs             : 11.1
+P99WaitMs             : 53.1
+SumWaitMs             : 252.6
+ShaderTranslatedLines : 2612
+
+
+

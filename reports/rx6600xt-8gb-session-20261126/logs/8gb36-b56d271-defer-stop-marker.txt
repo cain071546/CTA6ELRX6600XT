@@ -1,0 +1,2 @@
+﻿8gb36-b56d271-defer 5-minute cap reached at 2026-11-26T22:42:42.7655544-08:00; terminated game PID(s) ; victory.exe PID(s) 22148; launcher PID(s) 19092; scoped processes remaining: 1.
+8gb36-b56d271-defer 1-minute read-only crash monitor ended at 2026-11-26T22:43:45.6085211-08:00; failure-marker hits: 0.
