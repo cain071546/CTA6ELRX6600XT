@@ -153,6 +153,84 @@ fn hotness_bucket(uses: u64) -> usize {
     }
 }
 
+/// Admission-side churn counts, also diagnostics-only and default off. The
+/// bucket of an admission or refusal is the use count its staging buffer had
+/// before it was let go (0 on a first use). These atomics never gate a
+/// decision; they only say how often each kind of texture was tried.
+static HOT_ADMISSIONS: [std::sync::atomic::AtomicU64; 6] = [const { std::sync::atomic::AtomicU64::new(0) }; 6];
+static HOT_ADMISSION_BYTES: [std::sync::atomic::AtomicU64; 6] = [const { std::sync::atomic::AtomicU64::new(0) }; 6];
+static HOT_REFUSALS: [std::sync::atomic::AtomicU64; 6] = [const { std::sync::atomic::AtomicU64::new(0) }; 6];
+static HOT_REFUSAL_BYTES: [std::sync::atomic::AtomicU64; 6] = [const { std::sync::atomic::AtomicU64::new(0) }; 6];
+static HOT_EVICTIONS: [std::sync::atomic::AtomicU64; 6] = [const { std::sync::atomic::AtomicU64::new(0) }; 6];
+static HOT_EVICTION_BYTES: [std::sync::atomic::AtomicU64; 6] = [const { std::sync::atomic::AtomicU64::new(0) }; 6];
+static HOT_ROOM_DENIALS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+/// Use counts of evicted textures, so a later first use can be bucketed by
+/// what the title got from the earlier one.
+static LAST_USES: Mutex<Option<HashMap<usize, u64>>> = Mutex::new(None);
+
+fn last_uses(resource: This) -> u64 {
+    let mut map = LAST_USES.lock().unwrap_or_else(|e| e.into_inner());
+    map.get_or_insert_with(HashMap::new).remove(&(resource as usize)).unwrap_or(0)
+}
+
+fn note_admission(resource: This, bytes: u64) {
+    if !hotness() {
+        return;
+    }
+    let bucket = hotness_bucket(last_uses(resource));
+    use std::sync::atomic::Ordering::Relaxed;
+    HOT_ADMISSIONS[bucket].fetch_add(1, Relaxed);
+    HOT_ADMISSION_BYTES[bucket].fetch_add(bytes, Relaxed);
+}
+
+fn note_staging_refusal(resource: This, bytes: u64) {
+    if !hotness() {
+        return;
+    }
+    let bucket = hotness_bucket(last_uses(resource));
+    use std::sync::atomic::Ordering::Relaxed;
+    HOT_REFUSALS[bucket].fetch_add(1, Relaxed);
+    HOT_REFUSAL_BYTES[bucket].fetch_add(bytes, Relaxed);
+}
+
+fn note_eviction(resource: usize, uses: u64, bytes: u64) {
+    if !hotness() {
+        return;
+    }
+    let bucket = hotness_bucket(uses);
+    use std::sync::atomic::Ordering::Relaxed;
+    HOT_EVICTIONS[bucket].fetch_add(1, Relaxed);
+    HOT_EVICTION_BYTES[bucket].fetch_add(bytes, Relaxed);
+    let mut map = LAST_USES.lock().unwrap_or_else(|e| e.into_inner());
+    map.get_or_insert_with(HashMap::new).insert(resource, uses);
+}
+
+pub(crate) fn note_room_denial() {
+    if hotness() {
+        HOT_ROOM_DENIALS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
+/// Second memory line when hotness diagnostics are on: admission, refusal,
+/// and idle-eviction churn by the same use buckets. Reads atomics only.
+pub(crate) fn hotness_churn_line() -> Option<String> {
+    if !hotness() {
+        return None;
+    }
+    use std::sync::atomic::Ordering::Relaxed;
+    let counts = |a: &[std::sync::atomic::AtomicU64; 6]| a.iter().map(|v| v.load(Relaxed).to_string()).collect::<Vec<_>>().join("/");
+    let bytes = |a: &[std::sync::atomic::AtomicU64; 6]| a.iter().map(|v| (v.load(Relaxed) >> 20).to_string()).collect::<Vec<_>>().join("/");
+    Some(format!(
+        "texture hotness churn (VICTORY_TEXTURE_HOTNESS=1, diagnostics only): room-denied passes {}; \\
+         admissions {} ({} MB); staging refusals {} ({} MB); idle evictions {} ({} MB); \\
+         each series is buckets 0/1/2/3/4-7/8+",
+        HOT_ROOM_DENIALS.load(Relaxed),
+        counts(&HOT_ADMISSIONS), bytes(&HOT_ADMISSION_BYTES),
+        counts(&HOT_REFUSALS), bytes(&HOT_REFUSAL_BYTES),
+        counts(&HOT_EVICTIONS), bytes(&HOT_EVICTION_BYTES)
+    ))
+}
+
 /// One memory line when hotness diagnostics are on: live staging entries by
 /// recorded uses and bytes, so a later change can rank hot textures without
 /// guessing. Reads the table under its lock and changes nothing.
@@ -605,12 +683,13 @@ pub(crate) fn let_go_idle() {
     // is reset: one only the table holds is named by no list, recorded or
     // running.
     let (mut went, mut bytes) = (0u64, 0u64);
-    map.retain(|_, s| {
+    map.retain(|key, s| {
         let keep = Arc::strong_count(s) > 1
             || !crate::host::long_ago(s.used.load(Relaxed), idle_ms, IDLE_FRAMES);
         if !keep {
             LET_GO[0].fetch_add(1, Relaxed);
             LET_GO[1].fetch_add(s.bytes, Relaxed);
+            note_eviction(*key, s.uses.load(Relaxed), s.bytes);
             went += 1;
             bytes += s.bytes;
         }
@@ -1984,6 +2063,7 @@ fn staging(resource: This, copy: &crate::resource::HostTexture, first: u32) -> O
             if crate::residency::upload_refused()
                 || (speculative && !crate::residency::allow_staging_growth(false))
             {
+                note_staging_refusal(resource, total);
                 crate::residency::note_staging_deferred();
                 return None;
             }
@@ -2031,6 +2111,7 @@ fn staging(resource: This, copy: &crate::resource::HostTexture, first: u32) -> O
         judged: [const { std::sync::atomic::AtomicU64::new(0) }; 2],
         waiting: std::sync::atomic::AtomicU64::new(0),
     });
+    note_admission(resource, total);
     map.insert(resource as usize, s.clone());
     Some(s)
 }

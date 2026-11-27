@@ -1056,6 +1056,9 @@ fn log_memory() {
     if let Some(line) = crate::texture::hotness_line() {
         tracing::info!("{line}");
     }
+    if let Some(line) = crate::texture::hotness_churn_line() {
+        tracing::info!("{line}");
+    }
 }
 
 /// Microseconds since the first call.

@@ -2294,6 +2294,7 @@ impl State {
         let mut since_asked = 0u64;
         if !room {
             HEAP_TEXTURES_FULL.fetch_add(1, Ordering::Relaxed);
+            crate::texture::note_room_denial();
             once!("textures picked by index: the card has no room for more; they wait");
         }
         let mut refused = 0;
