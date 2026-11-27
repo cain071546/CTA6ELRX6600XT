@@ -1,0 +1,2 @@
+﻿8gb34-agility620 5-minute cap reached at 2026-11-26T21:36:28.7174109-08:00; terminated game PID(s) ; victory.exe PID(s) 13344; launcher PID(s) 19016; scoped processes remaining: 1.
+8gb34-agility620 1-minute read-only crash monitor ended at 2026-11-26T21:37:31.2580726-08:00; failure-marker hits: 0.

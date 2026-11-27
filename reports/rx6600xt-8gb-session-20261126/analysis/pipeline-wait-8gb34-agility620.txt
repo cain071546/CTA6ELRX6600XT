@@ -1,0 +1,5 @@
+﻿Pipeline-wait analyzer, read-only, 2026-11-26T21:41:52.7846378-08:00
+8gb30-minimal-stable windows=53 nonzero=23 median_ms=0 p90_ms=20.7 p99_ms=140 max_ms=208.4 sum_ms=757.7 shader_translated_lines=2650
+8gb31-deep-inplace windows=54 nonzero=12 median_ms=0 p90_ms=3.7 p99_ms=47.4 max_ms=63.6 sum_ms=172.8 shader_translated_lines=2615
+8gb32-port-constants windows=50 nonzero=12 median_ms=0 p90_ms=8.5 p99_ms=29.2 max_ms=96.7 sum_ms=202.1 shader_translated_lines=2599
+8gb34-agility620 windows=47 nonzero=17 median_ms=0 p90_ms=459 p99_ms=501.3 max_ms=539.1 sum_ms=4160 shader_translated_lines=2597

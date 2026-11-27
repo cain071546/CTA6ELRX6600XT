@@ -1,0 +1,19 @@
+﻿{
+    "RunId":  "8gb34-agility620",
+    "Log":  "C:\\Users\\mrgre\\AppData\\Local\\Temp\\opencode\\victory-8gb34-agility620.log",
+    "SampleCount":  47,
+    "GapCount":  46,
+    "MinGapS":  5.034354,
+    "MedianGapS":  5.656766,
+    "MaxGapS":  23.343884,
+    "MeanFps":  8.617,
+    "MedianFps":  4.7,
+    "P90Fps":  30,
+    "P99Fps":  31,
+    "MinFps":  0.3,
+    "MaxFps":  31,
+    "MedianFrameMs":  213.3,
+    "P90FrameMs":  543.7,
+    "P99FrameMs":  2898.6,
+    "MaxFrameMs":  2898.6
+}
