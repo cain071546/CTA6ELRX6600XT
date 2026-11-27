@@ -1,0 +1,2 @@
+﻿8gb39-texture-admission-diag 5-minute cap reached at 2026-11-26T23:41:28.7807671-08:00; terminated game PID(s) ; victory.exe PID(s) 9916; launcher PID(s) 17384; scoped processes remaining: 1.
+8gb39-texture-admission-diag 1-minute read-only crash monitor ended at 2026-11-26T23:42:31.4499844-08:00; failure-marker hits: 0.

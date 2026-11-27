@@ -1,0 +1,19 @@
+﻿{
+    "RunId":  "8gb39-texture-admission-diag",
+    "Log":  "C:\\Users\\mrgre\\AppData\\Local\\Temp\\opencode\\victory-8gb39-texture-admission-diag.log",
+    "SampleCount":  52,
+    "GapCount":  51,
+    "MinGapS":  5.066499,
+    "MedianGapS":  5.624148,
+    "MaxGapS":  11.960771,
+    "MeanFps":  8.617,
+    "MedianFps":  5.5,
+    "P90Fps":  29.9,
+    "P99Fps":  30,
+    "MinFps":  0.7,
+    "MaxFps":  30,
+    "MedianFrameMs":  180.4,
+    "P90FrameMs":  283.8,
+    "P99FrameMs":  1366.3,
+    "MaxFrameMs":  1366.3
+}

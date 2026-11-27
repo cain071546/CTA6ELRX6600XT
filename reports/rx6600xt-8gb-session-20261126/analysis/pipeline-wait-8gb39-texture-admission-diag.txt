@@ -1,0 +1,15 @@
+﻿
+
+RunId                 : 8gb39-texture-admission-diag
+Log                   : C:\Users\mrgre\AppData\Local\Temp\opencode\victory-8gb39-texture-admission-diag.log
+WindowCount           : 52
+NonzeroWindowCount    : 13
+MaxWaitMs             : 94.9
+MedianWaitMs          : 0
+P90WaitMs             : 6.9
+P99WaitMs             : 70.7
+SumWaitMs             : 318.6
+ShaderTranslatedLines : 2629
+
+
+

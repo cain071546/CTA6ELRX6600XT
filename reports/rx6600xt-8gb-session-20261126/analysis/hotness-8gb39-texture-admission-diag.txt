@@ -1,0 +1,17 @@
+﻿8gb39-texture-admission-diag texture hotness and admission-churn evidence
+log=C:\Users\mrgre\AppData\Local\Temp\opencode\victory-8gb39-texture-admission-diag.log
+declaration=final cumulative line from 52 stats windows / 51 gaps, nominal 5 s; no behavioral decision was made from these counters
+log_lines=74660-74668
+
+line=74660: 2026-11-27T07:41:27.306325Z  INFO victory_gpu::copystat: texture hotness 
+line=74661: (VICTORY_TEXTURE_HOTNESS=1, diagnostics only): 115 live staging textures, 387056 recorded uses, max 29721; entries in 
+line=74662: buckets 0/1/2/3/4-7/8+: 0/0/0/0/6/109; bytes in those buckets: 0/0/0/0/6/49 MB; hot 4+ uses: 115 entries 56 MB of 56 
+line=74663: MB live
+line=74664: 2026-11-27T07:41:27.306338Z  INFO victory_gpu::copystat: texture hotness churn 
+line=74665: (VICTORY_TEXTURE_HOTNESS=1, diagnostics only): room-denied passes 0; \
+line=74666:          admissions 268/3/10/6/13/133 (175/0/0/0/0/53 MB); staging refusals 0/0/0/0/0/0 (0/0/0/0/0/0 MB); idle 
+line=74667: evictions 0/43/16/9/27/219 (0/14/8/3/9/138 MB); \
+line=74668:          each series is buckets 0/1/2/3/4-7/8+
+
+dropped_without_host_pipeline_samples=52 max=3227 sum=36429
+worst_frame_line=31192 fps=0.7 frame_ms=1366.3 preparing_ms=378.4
