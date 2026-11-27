@@ -42,4 +42,12 @@ fn main() {
     }
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rustc-env=VICTORY_TRANSLATOR={}", hash.finalize().to_hex());
+    // GPU tests create D3D12 devices too. Pass the shared Agility exports
+    // (victory-shader's src/agility.rs) to this crate's test executables.
+    if std::env::var("CARGO_CFG_TARGET_ENV").as_deref() == Ok("msvc") {
+        for name in ["D3D12SDKVersion", "D3D12SDKPath"] {
+            println!("cargo:rustc-link-arg=/INCLUDE:{name}");
+            println!("cargo:rustc-link-arg=/EXPORT:{name},DATA");
+        }
+    }
 }

@@ -1276,12 +1276,73 @@ pub(crate) fn read_from(layout: &victory_formats::texture::Layout, first: u32) -
     if layout.bytes_from(first) < layout.size { first } else { 0 }
 }
 
+/// The share of the card's local VRAM budget in use, in percent, cached for
+/// a tenth of a second like [`room_lately`]. Used by [`over_cap`] to tighten
+/// the texture-side limit while the card fills up.
+#[cfg(windows)]
+fn video_memory_percent() -> u64 {
+    use std::sync::atomic::Ordering::Relaxed;
+    static LAST: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let tenth = crate::host::now_ms() / 100 + 1;
+    let last = LAST.load(Relaxed);
+    if last >> 8 == tenth {
+        return last & 0xff;
+    }
+    let pct = crate::host::host()
+        .and_then(|h| h.video_memory())
+        .and_then(|[budget, used, ..]| {
+            (budget > 0).then(|| ((u128::from(used) * 100) / u128::from(budget)).min(255) as u64)
+        })
+        .unwrap_or(0);
+    LAST.store((tenth << 8) | pct, Relaxed);
+    pct
+}
+
+/// How many of a streamed placed 2D texture's largest mips to skip so no side
+/// passes `VICTORY_TEXTURE_MAX` (`0`: uncapped; unset: 1024, then 512 from
+/// 92 % of the VRAM budget and 256 from 97 %). Skipping stops at the last mip
+/// rather than leaving a texture with no levels at all. This is a separate,
+/// per-texture cap from the byte budget in [`room`] and does not change the
+/// target reservation in [`targets_room_kept`].
+#[cfg(windows)]
+fn over_cap(desc: &ResourceDesc) -> u32 {
+    static SET: std::sync::OnceLock<Option<u64>> = std::sync::OnceLock::new();
+    let set = *SET.get_or_init(|| {
+        std::env::var("VICTORY_TEXTURE_MAX")
+            .ok()
+            .and_then(|v| v.trim().parse::<u64>().ok())
+    });
+    if set == Some(0) {
+        return 0;
+    }
+    let max = set.unwrap_or_else(|| match video_memory_percent() {
+        0..92 => 1024,
+        92..97 => 512,
+        _ => 256,
+    });
+    texture_cap_skip(desc.width, u64::from(desc.height), u32::from(desc.mip_levels), max)
+}
+
+/// Pure half of [`over_cap`], so the cap can be tested without a device.
+#[cfg(windows)]
+fn texture_cap_skip(width: u64, height: u64, mips: u32, max: u64) -> u32 {
+    let mut skip = 0;
+    while (width >> skip) > max || (height >> skip) > max {
+        if skip + 1 >= mips {
+            break;
+        }
+        skip += 1;
+    }
+    skip
+}
+
 /// The level a host copy begins at for views that start at `first`: one the
-/// host can have as a texture's level 0 ([`read_from`]; block-compressed
-/// formats in whole blocks).
+/// host can have as a texture's level 0 ([`read_from`], [`over_cap`];
+/// block-compressed formats in whole blocks).
 #[cfg(windows)]
 fn base_level(desc: &ResourceDesc, first: u32) -> u32 {
     const TEXTURE_2D: u32 = 3;
+    let first = first.max(over_cap(desc));
     if first == 0
         || !fills(desc)
         || desc.dimension != TEXTURE_2D
@@ -1625,7 +1686,8 @@ fn hosted(this: This, make: bool) -> Option<Made> {
                 base = base_level(&r.desc, first);
             }
             // The store has its larger levels: made whole at once.
-            if base > 0
+            if over_cap(&r.desc) == 0
+                && base > 0
                 && tiled.is_none()
                 && let Some(found) = stored_levels(r, first)
             {
@@ -3371,6 +3433,14 @@ mod tests {
         // Boundaries: 59 belongs to the preceding family, 66 is unmapped.
         assert_eq!(family(59), 53);
         assert_eq!(family(66), 66);
+    }
+
+    #[test]
+    fn texture_max_skips_only_whole_largest_mips() {
+        assert_eq!(texture_cap_skip(2048, 1024, 5, 512), 2);
+        assert_eq!(texture_cap_skip(2048, 1024, 1, 512), 0);
+        assert_eq!(texture_cap_skip(4096, 4096, 3, 256), 2);
+        assert_eq!(texture_cap_skip(256, 256, 4, 256), 0);
     }
 
     type Release = extern "system" fn(This) -> u32;

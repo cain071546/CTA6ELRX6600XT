@@ -62,4 +62,13 @@ fn main() {
     println!("cargo:rustc-env=VICTORY_SHADER_SOURCE_HASH={:016x}{:016x}", state[0], state[1]);
     let joined: Vec<_> = switches.into_iter().collect();
     println!("cargo:rustc-env=VICTORY_SHADER_SWITCHES={}", joined.join(","));
+    // This crate defines the shared Agility exports (src/agility.rs). On MSVC,
+    // export them from every target that links here: victory.exe needs them,
+    // and so do the shader/GPU test executables that create D3D12 devices.
+    if std::env::var("CARGO_CFG_TARGET_ENV").as_deref() == Ok("msvc") {
+        for name in ["D3D12SDKVersion", "D3D12SDKPath"] {
+            println!("cargo:rustc-link-arg=/INCLUDE:{name}");
+            println!("cargo:rustc-link-arg=/EXPORT:{name},DATA");
+        }
+    }
 }

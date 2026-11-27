@@ -222,7 +222,7 @@ What each part does today and what it still needs:
 | Audio | Menu, video and loading sound; XMA voices and Opus streams decode | Reverb is silent; Opus results unverified against the title |
 | GPU: menus | Draws, compute and presentation on host D3D12; only changed title memory is copied | Frame pacing drifts on one screen in release builds |
 | GPU: world | The scene is drawn and presented: mesh pipelines, indirect execution, views the shaders pick from the heap themselves, title memory read by address (ray-tracing structures), depth written from compute, pipelines pre-built or made by worker threads and kept on disk | Lighting (surfaces are unlit) and some missing geometry; frames take 1-2 s; draws of untranslated shaders are dropped; real queries, depth bounds, HDR and scaling are missing |
-| Shaders | Console GPU code recompiled to DXIL, ahead of time (`translate --cache`) or at first use, cached on disk. Menus: all. World: mesh 8,765 of 8,765, vertex/pixel 12,550 of 12,592, compute 2,579 of 2,637 | Merged geometry stages (195 programs) and about 100 others; fused multiply-adds follow the host GPU; some compute programs need a GPU with 64-lane waves |
+| Shaders | Console GPU code recompiled to DXIL, ahead of time (`translate --cache`) or at first use, cached on disk. Menus: all. World: mesh 8,765 of 8,765, vertex/pixel 12,550 of 12,592, compute 2,579 of 2,637 | Merged geometry stages (195 programs) and about 100 others; fused multiply-adds follow the host GPU; compute programs that still declare 64-lane waves need a host reporting `WaveLaneCountMax=64` (an RX 6600 XT does); on wave32-only cards those draws are dropped |
 | Textures | Console tiled layouts and detiling for the modes the title uses | Render-target metadata planes |
 | Series S mode | Runs through the menus to the loading screen | The world, as above |
 
@@ -230,7 +230,10 @@ What each part does today and what it still needs:
 
 Requirements: Windows 10/11 x64, a CPU with AVX2, a Direct3D 12 GPU with
 shader model 6.6 (and mesh shaders for the world), Rust (pinned in
-`rust-toolchain.toml`).
+`rust-toolchain.toml`). On Windows 10, run `cargo xtask agility` once so
+`victory.exe` and GPU-backed tests load a D3D12 runtime that provides 6.6; the
+in-box runtime stops at 6.5. Cards with 8 GB can be launched with
+`scripts\play.ps1 -Profile low-vram`; see README.md, "Low-VRAM cards".
 
 To install Rust, use rustup (`winget install --id Rustlang.Rustup -e`, or
 the installer from https://rustup.rs). The first `cargo` command in this
@@ -334,7 +337,7 @@ The on/off switches below (`...=1`) are off when unset or set to `0`.
 | `VICTORY_CRASH_SAVE=<rva>:<len>,...` | saves title memory to the cache folder on a crash |
 | `VICTORY_CAPTURE=<dir>` | saves presented frames (powers of two, or `VICTORY_CAPTURE_FRAMES=<list>`) |
 | `VICTORY_DUMP_TARGETS=1` | with the two above, saves every render target of those frames |
-| `VICTORY_D3D12_DEBUG=1` | host debug layer |
+| `VICTORY_D3D12_DEBUG=1` | host debug layer (Windows 10 needs the Graphics Tools optional feature) |
 | `VICTORY_D3D12_GBV=1` | with the above, GPU-based validation (bad descriptor use reported, not faulted; slow) |
 | `VICTORY_D3D12_DRED=1` | on a GPU failure, the allocation hit and the commands in flight |
 | `VICTORY_PIPELINE_WAIT_MS=24` | reduce the per-frame wait for background pipeline creation from the default of 500 ms. A draw can be omitted until its pipeline is ready |

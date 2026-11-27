@@ -79,7 +79,7 @@ impl Pending {
         self.made.get_or_init(|| {
             let _building = crate::timeline::span("pipeline: build a host pipeline");
             let began = Instant::now();
-            let made = HostPipeline::new(&self.shaders, self.graphics.as_deref());
+            let made = HostPipeline::new(&self.shaders, self.graphics.as_deref(), &self.key);
             super::library::note_time(&self.key, began.elapsed().as_millis() as u64);
             made
         });

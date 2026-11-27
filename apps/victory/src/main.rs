@@ -3,8 +3,10 @@
 //! Every command reads the user's own files and writes only to stdout or to
 //! the user's cache directory (outside the repository).
 
+mod agility;
 mod census;
 mod inspect;
+mod profile;
 #[cfg(all(windows, feature = "diagnostics"))]
 mod replay;
 mod run;
@@ -180,6 +182,9 @@ enum Console {
 }
 
 fn main() -> Result<()> {
+    // Presets are process-wide defaults for switches read later, so set them
+    // before anything starts a thread or asks for a switch.
+    profile::apply_from_env();
     victory_core::logging::init("info");
     // The audio recorder `run` starts for `VICTORY_AUDIO_CAPTURE`.
     #[cfg(all(windows, feature = "diagnostics"))]
@@ -262,6 +267,23 @@ fn show_config() -> Result<()> {
     println!("game_dir    : {}", status(&cfg.game_dir));
     println!("cache_dir   : {}", cfg.cache_dir.display());
     println!("data_dir    : {}", cfg.data_dir.display());
+    let active = profile::active();
+    println!("profile     : {}", profile::name(active));
+    if active == profile::Profile::LowVram {
+        for &(key, _) in profile::LOW_VRAM {
+            println!("  {key} = {}", std::env::var(key).unwrap_or_else(|_| "(unset)".into()));
+        }
+    }
+    match agility::runtime_dir().map(|d| d.join("D3D12Core.dll")) {
+        Some(dll) if dll.exists() => println!(
+            "d3d12 sdk   : {} (version {})",
+            dll.display(),
+            agility::D3D12SDKVersion
+        ),
+        _ => println!(
+            "d3d12 sdk   : not beside the executable (needed on Windows 10: `cargo xtask agility`)"
+        ),
+    }
     for t in &cfg.test_titles {
         println!("test_title  : {}", status(&Some(t.clone())));
     }

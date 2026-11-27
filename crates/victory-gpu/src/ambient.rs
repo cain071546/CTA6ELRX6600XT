@@ -582,7 +582,12 @@ pub(crate) fn after(list: &HostList, role: Role, views: &Views) -> bool {
         uav_barrier(l);
         l.SetComputeRootSignature(&pass.root);
         l.SetComputeRoot32BitConstants(0, 15, words.as_ptr().cast(), 0);
-        l.SetComputeRootDescriptorTable(1, views.depth);
+        // Only `Resolve` reads `depth` (`t0`). The other roles are handed
+        // the UAV image as `views.depth` by the caller, so binding it to an
+        // SRV range would give the debug layer a UAV handle for an SRV table.
+        if role == Role::Resolve {
+            l.SetComputeRootDescriptorTable(1, views.depth);
+        }
         l.SetComputeRootDescriptorTable(2, views.image);
         l.SetComputeRootUnorderedAccessView(3, pass.cells.GetGPUVirtualAddress());
         l.SetComputeRootUnorderedAccessView(4, pass.points.GetGPUVirtualAddress());

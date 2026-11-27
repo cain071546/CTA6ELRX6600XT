@@ -4028,8 +4028,18 @@ impl State {
             why("mesh draws are switched off (VICTORY_MESH_TEST=skip)");
             return false;
         }
+        // The title's culling writes indirect records in place, sometimes
+        // after a batch or window was prepared. A clamp here, after the
+        // writing that came before it in this list, reads the bytes the
+        // execution will read (`VICTORY_PORT_CONSTANTS_ORDER`). It costs one
+        // pass per execution, so only in-place arguments take it.
+        let in_place_order = crate::port::arguments_order() && args.in_place();
+        if in_place_order {
+            self.batch = None;
+            self.window = None;
+        }
         // One record without a count: clamped in a batch (`batches`).
-        let batch = if batches() > 0 && max == 1 && count.is_none() {
+        let batch = if !in_place_order && batches() > 0 && max == 1 && count.is_none() {
             args.refresh(list, arguments, len);
             self.batched(list, &args, arguments, kind)
         } else {
@@ -4044,7 +4054,8 @@ impl State {
         // or may write the arguments.
         const WINDOW_USE: usize = usize::MAX - 0x77;
         let offset = args.offset(arguments);
-        let windowed = windows()
+        let windowed = !in_place_order
+            && windows()
             && kind != DISPATCH
             && max == 1
             && count.is_none()
@@ -4672,12 +4683,13 @@ fn frame_ms(frame: u64, now: u64) -> u64 {
 }
 
 /// Per-frame texture staging byte budget scaled from the adapter's local VRAM
-/// budget (`None` keeps the 192 MiB 12 GiB baseline).
+/// budget: 96 MiB through 8 GiB, then the 192 MiB baseline (`None`). An 8 GB
+/// card has about 8 GiB of DXGI budget, so it uses the small-card tier too.
 fn staging_budget_per_frame(vram_budget: Option<u64>) -> u64 {
     const GIB: u64 = 1 << 30;
     const MIB: u64 = 1 << 20;
     match vram_budget {
-        Some(budget) if budget <= 6 * GIB => 96 * MIB,
+        Some(budget) if budget <= 8 * GIB => 96 * MIB,
         Some(budget) if budget >= 20 * GIB => 384 * MIB,
         Some(budget) if budget > 12 * GIB => 256 * MIB,
         _ => 192 * MIB,
@@ -4695,7 +4707,7 @@ mod tests {
         assert_eq!(staging_budget_per_frame(None), 192 * MIB);
         assert_eq!(staging_budget_per_frame(Some(4 * GIB)), 96 * MIB);
         assert_eq!(staging_budget_per_frame(Some(6 * GIB)), 96 * MIB);
-        assert_eq!(staging_budget_per_frame(Some(8 * GIB)), 192 * MIB);
+        assert_eq!(staging_budget_per_frame(Some(8 * GIB)), 96 * MIB);
         assert_eq!(staging_budget_per_frame(Some(12 * GIB)), 192 * MIB);
         assert_eq!(staging_budget_per_frame(Some(13 * GIB)), 256 * MIB);
         assert_eq!(staging_budget_per_frame(Some(14 * GIB)), 256 * MIB);

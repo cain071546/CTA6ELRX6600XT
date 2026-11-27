@@ -558,6 +558,11 @@ fn sweep() {
     crate::residency::refresh();
     if crate::residency::pressured() {
         trim_spare_chunks();
+        send::trim();
+        card_steps::trim();
+        crate::shadow::trim_snapshots();
+        crate::list::trim_idle(32);
+        crate::list::thin::trim_backs(16);
     }
     crate::pool::room(host().and_then(|h| h.video_memory()));
     crate::pipeline::trim_library();
@@ -919,6 +924,14 @@ pub(crate) fn fail(what: std::fmt::Arguments) -> ! {
         }
         match host.log_messages() {
             Some(first) => text.push_str(&format!("; debug layer: {first}")),
+            None if host.messages.is_none()
+                && cfg!(feature = "diagnostics")
+                && crate::switch::on("VICTORY_D3D12_DEBUG") =>
+            {
+                text.push_str(
+                    "; no D3D12 info queue: on Windows 10 install the Graphics Tools optional feature to let VICTORY_D3D12_DEBUG name the command",
+                )
+            }
             None if host.messages.is_none() => text.push_str(
                 "; a diagnostics build with VICTORY_D3D12_DEBUG=1 names the command",
             ),
@@ -1057,6 +1070,17 @@ fn create() -> windows::core::Result<Host> {
         let messages = debug
             .then(|| device.cast::<ID3D12InfoQueue>().ok())
             .flatten();
+        let debug_requested = debug;
+        tracing::info!(
+            requested = debug_requested,
+            info_queue = messages.is_some(),
+            "host D3D12 debug layer"
+        );
+        if debug_requested && messages.is_none() {
+            tracing::warn!(
+                "VICTORY_D3D12_DEBUG asked for a debug layer, but there is no info queue; on Windows 10 install the Graphics Tools optional feature"
+            );
+        }
         let queue: ID3D12CommandQueue = device.CreateCommandQueue(&D3D12_COMMAND_QUEUE_DESC {
             Type: D3D12_COMMAND_LIST_TYPE_DIRECT,
             ..Default::default()
@@ -1324,6 +1348,7 @@ pub(crate) struct HostList {
     /// depends on ([`HostList::changed_something`]); no two lists have the
     /// same.
     epoch: std::sync::atomic::AtomicU64,
+    resets: AtomicU32,
     /// Counts the list in [`ALIVE`] while it lives.
     _alive: Counted,
     /// The texts of the markers `note_op` set, in order (for device-removed
@@ -4267,6 +4292,7 @@ impl Host {
                 batch_args: Mutex::default(),
                 coming: Mutex::default(),
                 epoch: std::sync::atomic::AtomicU64::new(next_epoch()),
+                resets: AtomicU32::new(0),
                 _alive: Counted::new(),
                 #[cfg(feature = "diagnostics")]
                 notes,
@@ -4504,7 +4530,7 @@ impl Host {
                         });
                     }
                     for (shadow, ranges) in &dirty {
-                        let Some((staging, before, _)) = shadow.card_sides() else {
+                        let Some((staging, _, _)) = shadow.card_sides() else {
                             continue;
                         };
                         if own.is_none() && up.is_none() {
@@ -4518,15 +4544,19 @@ impl Host {
                         #[cfg(feature = "diagnostics")]
                         traffic::moved(traffic::UP, shadow.span(), ranges.iter().copied());
                         // (Once for each buffer, however many copies lie in
-                        // it: codec-d/cool_fox 641835a4.)
-                        if own.is_none() && before.is_some() && !ranges.is_empty() {
+                        // it: codec-d/cool_fox 641835a4.) Back to common,
+                        // not a read state: a buffer that was promoted from
+                        // common by a copy and left there faults the next
+                        // root-SRV read; from common the read promotes.
+                        let looked = looks.as_ref().is_some_and(|looks| looks.hold(shadow));
+                        if own.is_none() && (!ranges.is_empty() || looked) {
                             let raw = shadow.buffer.as_raw();
                             if !transitioned.contains(&raw) {
                                 transitioned.push(raw);
                                 sent.push(transition(
                                     &shadow.buffer,
                                     D3D12_RESOURCE_STATE_COPY_DEST,
-                                    D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+                                    D3D12_RESOURCE_STATE_COMMON,
                                 ));
                             }
                         }
@@ -5103,7 +5133,7 @@ impl Host {
         let mut telling = std::time::Instant::now();
         for item in items {
             telling = match item {
-                Late::Run(flight) => {
+                Late::Run(mut flight) => {
                     last = flight.number;
                     for &i in &flight.order {
                         read_backs(flight.lists[i].host());
@@ -5113,6 +5143,9 @@ impl Host {
                     }
                     if let Some(own) = flight.own {
                         own.landed();
+                    }
+                    for detached in &mut flight.lists {
+                        detached.release_tables();
                     }
                     landed.push((flight.lists, flight.order));
                     crate::land::spent(crate::land::stat::READ_BACKS, telling)
@@ -5573,13 +5606,16 @@ impl Host {
             let mut landed = Vec::new();
             for item in items {
                 match item {
-                    Late::Run(flight) => {
+                    Late::Run(mut flight) => {
                         last = flight.number;
                         for &i in &flight.order {
                             read_backs(flight.lists[i].host());
                         }
                         if let Some(card) = flight.card {
                             self.card_done(card);
+                        }
+                        for detached in &mut flight.lists {
+                            detached.release_tables();
                         }
                         landed.push((flight.lists, flight.order));
                     }
@@ -6521,9 +6557,14 @@ impl HostList {
             .splice(at..at, found.into_iter().map(|(shadow, from, to)| Step::Refresh(shadow, from as usize, (to - from) as usize)));
     }
 
+    pub(crate) fn should_retire(&self) -> bool {
+        self.resets.load(Ordering::Relaxed) >= 256
+    }
+
     /// Only after the list's last submission finished (every one is waited
     /// for).
     pub(crate) fn reset(&self) {
+        self.resets.fetch_add(1, Ordering::Relaxed);
         self.changed_something();
         #[cfg(feature = "diagnostics")]
         let started = std::time::Instant::now();

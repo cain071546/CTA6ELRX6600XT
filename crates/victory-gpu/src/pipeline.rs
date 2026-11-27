@@ -195,6 +195,13 @@ impl Shader {
 
 #[cfg(windows)]
 impl Shader {
+    /// The full container hash, for a device-removed report's 32-hex names
+    /// (diagnostics): the short hash in draw notes is only its first half.
+    #[cfg(feature = "diagnostics")]
+    pub(crate) fn full_hash(&self) -> String {
+        blake3::hash(&self.container).to_hex().to_string()
+    }
+
     /// The console programs of the container; `None` if they are not known.
     pub(crate) fn programs(&self) -> Option<Vec<victory_shader::NativeProgram>> {
         use victory_shader::{Container, FourCC};

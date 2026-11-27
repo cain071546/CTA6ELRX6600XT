@@ -78,6 +78,26 @@ pub(crate) fn on() -> bool {
     *ON.get_or_init(|| std::env::var("VICTORY_PORT_CONSTANTS").is_ok_and(|v| v.trim() == "1"))
 }
 
+/// Whether indirect arguments in in-place title memory are clamped one at a
+/// time, right before the execution that reads them
+/// (`VICTORY_PORT_CONSTANTS_ORDER`, on by default; `0` clamps them in
+/// batches/windows as before). This covers port #1's memory and the
+/// in-place copies of `VICTORY_COPIES_IN_PLACE`.
+///
+/// A batch clamps all the records it knows when it opens. With in-place
+/// arguments the title's culling writes those records in the same memory,
+/// sometimes after the batch opened, so trees and lighting can read the
+/// culling's earlier bytes. One clamp per execution costs a few milliseconds
+/// but runs after all the writing that came before it in the list.
+pub(crate) fn arguments_order() -> bool {
+    static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *ON.get_or_init(|| order_from(std::env::var("VICTORY_PORT_CONSTANTS_ORDER").ok()))
+}
+
+fn order_from(value: Option<String>) -> bool {
+    value.is_none_or(|v| v.trim() != "0")
+}
+
 /// A stretch of title memory opened as a heap through a view of ours.
 struct Region {
     start: u64,
@@ -328,6 +348,15 @@ mod tests {
         assert!(!low(0xffff_0000, 0x2_0000));
         assert!(!low(0xe_1c80_0000, 0x1000));
         assert!(!low(u64::MAX, 2));
+    }
+
+    /// In-place argument order is on unless it is explicitly switched off.
+    #[test]
+    fn in_place_arguments_are_clamped_in_order_unless_switched_off() {
+        assert!(order_from(None));
+        assert!(order_from(Some(String::new())));
+        assert!(order_from(Some("1".into())));
+        assert!(!order_from(Some(" 0 ".into())));
     }
 
     /// A stretch of a reserved section, mapped as `xmem` maps physical

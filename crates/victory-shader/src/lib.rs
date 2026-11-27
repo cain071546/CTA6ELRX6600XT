@@ -6,6 +6,7 @@
 //! (compiler options) and the zlib-compressed GFX10 code. The bitcode may use
 //! console-only intrinsics, so the GFX10 code is translated in general.
 
+pub mod agility;
 pub mod bvh;
 pub mod dxbc;
 pub mod dxil;

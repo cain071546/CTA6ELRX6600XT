@@ -400,6 +400,24 @@ pub(crate) struct HostPipeline {
     pub(crate) state: String,
 }
 
+/// The PSO's debug name. DRED reports pipeline-library names (32 hex) and
+/// target shaders, while a draw's note names a title pipeline's key (32 hex)
+/// and its shaders' short hashes (16 hex). Keeping all three on the PSO lets
+/// the device-removed report join them (diagnostics only).
+#[cfg(feature = "diagnostics")]
+fn pso_name(title_key: &str, library_name: &str, shaders: &[Arc<Shader>]) -> String {
+    let full: Vec<String> = shaders
+        .iter()
+        .map(|s| format!("{} {}", s.stage, s.full_hash()))
+        .collect();
+    format!("{shaders:?} title {title_key} library {library_name} full [{full:?}]")
+}
+
+#[cfg(not(feature = "diagnostics"))]
+fn pso_name(_title_key: &str, _library_name: &str, shaders: &[Arc<Shader>]) -> String {
+    format!("{shaders:?}")
+}
+
 /// Logs a pipeline that gets no host pipeline, once per reason.
 fn refuse(reason: &'static str, shaders: &[Arc<Shader>]) -> Option<HostPipeline> {
     static SEEN: std::sync::Mutex<Vec<&str>> = std::sync::Mutex::new(Vec::new());
@@ -414,10 +432,11 @@ fn refuse(reason: &'static str, shaders: &[Arc<Shader>]) -> Option<HostPipeline>
 impl HostPipeline {
     /// A host pipeline for vertex and pixel shaders with the graphics
     /// state `g`, or for one compute shader.
-    pub(crate) fn new(shaders: &[Arc<Shader>], g: Option<&GraphicsState>) -> Option<HostPipeline> {
-        // For the report when the host device is removed: what this thread
-        // has in the library from here on.
-        super::library::label(format!("{shaders:?}"));
+    pub(crate) fn new(
+        shaders: &[Arc<Shader>],
+        g: Option<&GraphicsState>,
+        title_key: &str,
+    ) -> Option<HostPipeline> {
         let find = |stage| shaders.iter().find(|s| s.stage == stage);
         let compute = match shaders {
             [cs] if cs.stage == "compute" => Some(cs),
@@ -618,6 +637,7 @@ impl HostPipeline {
                 ..Default::default()
             };
             let name = super::library::name("compute", &root_blob, &[&code_bytes(&code(0))], "");
+            super::library::label(pso_name(title_key, &name, shaders));
             let made = super::library::pipeline(
                 &name,
                 // SAFETY: the description points at live data.
@@ -634,14 +654,15 @@ impl HostPipeline {
                 }
             };
             tracing::info!(?shaders, "host pipeline");
-            crate::host::name(&pso, || format!("{shaders:?}"));
+            let named = pso_name(title_key, &name, shaders);
+            crate::host::name(&pso, || named.clone());
             return Some(HostPipeline {
                 compute: true,
                 mesh: false,
                 pso,
                 root,
                 stages: bound,
-                name: format!("{shaders:?}"),
+                name: named,
                 slots: 0,
                 inputs: Vec::new(),
                 rects: false,
@@ -678,6 +699,7 @@ impl HostPipeline {
                 &[&code_bytes(&code(0)), &code_bytes(&code(1))],
                 &state,
             );
+            super::library::label(pso_name(title_key, &name, shaders));
             let pso = match mesh_pipeline(&host.device, &root, code(0), code(1), g, depth_bounds, &name) {
                 Ok(pso) => pso,
                 Err(e) => {
@@ -687,14 +709,15 @@ impl HostPipeline {
                 }
             };
             tracing::info!(?shaders, "host mesh pipeline");
-            crate::host::name(&pso, || format!("{shaders:?}"));
+            let named = pso_name(title_key, &name, shaders);
+            crate::host::name(&pso, || named.clone());
             return Some(HostPipeline {
                 compute: false,
                 mesh: true,
                 pso,
                 root,
                 stages: bound,
-                name: format!("{shaders:?}"),
+                name: named,
                 slots: 0,
                 inputs: Vec::new(),
                 rects: false,
@@ -775,14 +798,18 @@ impl HostPipeline {
                 || unsafe { host.device.CreateGraphicsPipelineState(desc) },
             )
         };
-        let mut made = make(&desc, &name(rect_gs.as_ref()));
+        let mut library_name = name(rect_gs.as_ref());
+        super::library::label(pso_name(title_key, &library_name, shaders));
+        let mut made = make(&desc, &library_name);
         if made.is_err() && rect_gs.is_some() {
             // The host refused the geometry stage: once more without it.
             tracing::warn!(?shaders, "host pipeline refused with the rectangle geometry stage");
             host.log_messages();
             desc.GS = D3D12_SHADER_BYTECODE::default();
             rect_gs = None;
-            made = make(&desc, &name(None));
+            library_name = name(None);
+            super::library::label(pso_name(title_key, &library_name, shaders));
+            made = make(&desc, &library_name);
         }
         let pso = match made {
             Ok(pso) => pso,
@@ -793,7 +820,8 @@ impl HostPipeline {
             }
         };
         tracing::info!(?shaders, "host pipeline");
-        crate::host::name(&pso, || format!("{shaders:?}"));
+        let named = pso_name(title_key, &library_name, shaders);
+        crate::host::name(&pso, || named.clone());
         tracing::debug!(
             ?shaders,
             depth = ?g.depth,
@@ -810,7 +838,7 @@ impl HostPipeline {
             pso,
             root,
             stages: bound,
-            name: format!("{shaders:?}"),
+            name: named,
             slots: g.slots(),
             inputs: g.elements(),
             rects: rect_gs.is_some(),

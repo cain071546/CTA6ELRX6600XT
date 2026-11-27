@@ -289,8 +289,9 @@ pub fn make(dir: &Path, which: &[usize], mut each: impl FnMut(usize, Option<(f64
         let Some(entry) = entries.get(n) else { continue };
         each(*n, None);
         let began = std::time::Instant::now();
+        let key: String = entry.get(..16).unwrap_or_default().iter().map(|b| format!("{b:02x}")).collect();
         let made = parse(entry, &mut read)
-            .and_then(|(shaders, g)| HostPipeline::new(&shaders, g.as_deref()))
+            .and_then(|(shaders, g)| HostPipeline::new(&shaders, g.as_deref(), &key))
             .is_some();
         each(*n, Some((began.elapsed().as_secs_f64() * 1e3, made)));
     }

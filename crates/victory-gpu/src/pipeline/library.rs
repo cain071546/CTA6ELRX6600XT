@@ -21,7 +21,11 @@
 //! 87 to 96 of 110 looks at each worker found it waiting for that lock
 //! (run 49), and an earlier run's 2,300 pipelines, all in the library, were
 //! still being loaded 46 s into the opening cutscene.
-//! `VICTORY_LIBRARY_LOCK=1`: one call at a time, as before.
+//! `VICTORY_LIBRARY_LOCK=1`: one call at a time, including a compile made
+//! after a load misses, as before.
+//! `VICTORY_PIPELINE_LIBRARY=0`: no library calls at all; every pipeline is
+//! made by the driver. A diagnostic for drivers that fault while a load or a
+//! compile is running; it gives up the cache and its cold-start cost.
 //!
 //! The library's file is mapped, not read into memory ([`Blob`]): the host
 //! keeps pointing into the bytes it was made from for as long as it lives,
@@ -48,7 +52,7 @@
 //! open (the test below). `VICTORY_LIBRARY_HANDLE=0`: closed, as before.
 
 use std::collections::HashSet;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Mutex, MutexGuard, OnceLock, RwLock};
 
@@ -59,7 +63,29 @@ static DIR: OnceLock<PathBuf> = OnceLock::new();
 
 /// Keeps the pipeline library and the early list in `dir` from now on.
 pub fn use_pipeline_cache(dir: PathBuf) {
+    invalidate_other_runtime(&dir);
     let _ = DIR.set(dir);
+}
+
+/// The runtime that made the library on disk. PSOs from another D3D12
+/// Agility runtime are not worth loading: they cannot explain a crash, and
+/// the cache is rebuilt from the shaders either way.
+const SDK_FILE: &str = "agility-sdk.txt";
+
+fn invalidate_other_runtime(dir: &Path) {
+    let version = victory_shader::agility::D3D12SDKVersion.to_string();
+    let marker = dir.join(SDK_FILE);
+    let current = std::fs::read_to_string(&marker)
+        .map(|v| v.trim() == version)
+        .unwrap_or(false);
+    if current {
+        return;
+    }
+    let _ = std::fs::create_dir_all(dir);
+    for name in [LIBRARY_FILE, NEXT_FILE] {
+        let _ = std::fs::remove_file(dir.join(name));
+    }
+    let _ = std::fs::write(&marker, version);
 }
 
 /// The folder the library is kept in.
@@ -446,6 +472,10 @@ fn library() -> Option<&'static Library> {
     static LIBRARY: OnceLock<Option<Library>> = OnceLock::new();
     LIBRARY
         .get_or_init(|| {
+            if std::env::var_os("VICTORY_PIPELINE_LIBRARY").is_some_and(|v| v == "0") {
+                tracing::info!("host pipeline library off (VICTORY_PIPELINE_LIBRARY=0)");
+                return None;
+            }
             let _opening = crate::timeline::span("pipeline: open the host pipeline library");
             let device = crate::host::host()?.device.cast::<ID3D12Device1>().ok()?;
             let blob = DIR.get().map_or(Blob::None, |d| Blob::of(d));
@@ -552,8 +582,12 @@ pub(crate) fn pipeline(
         }
         Err(e) => e,
     };
-    // Compiled outside any lock: compiles take up to seconds.
+    // Compiled outside the library's own calls: a compile takes up to
+    // seconds. Under `VICTORY_LIBRARY_LOCK=1` it still holds the one-call
+    // lock, so eight workers cannot make the driver compile eight pipelines
+    // at once (the fresh-cache burst that removed an RDNA2 device).
     let pso = {
+        let _all = one_call();
         let _call = call("make", name);
         create()?
     };
@@ -805,6 +839,30 @@ mod tests {
         assert_ne!(a, name("mesh", b"root", &[b"vs", b"ps"], "state"));
         // Parts do not run into each other.
         assert_ne!(a, name("graphics", b"root", &[b"vsp", b"s"], "state"));
+    }
+
+    #[test]
+    fn a_different_agility_runtime_discards_the_library() {
+        let dir = tempfile::tempdir().unwrap();
+        let library = dir.path().join(LIBRARY_FILE);
+        let next = dir.path().join(NEXT_FILE);
+        std::fs::write(&library, b"old runtime's pipelines").unwrap();
+        std::fs::write(&next, b"old runtime's next save").unwrap();
+        std::fs::write(dir.path().join(SDK_FILE), b"999\n").unwrap();
+        invalidate_other_runtime(dir.path());
+        assert!(!library.exists());
+        assert!(!next.exists());
+        assert_eq!(
+            std::fs::read_to_string(dir.path().join(SDK_FILE)).unwrap(),
+            victory_shader::agility::D3D12SDKVersion.to_string()
+        );
+        // A second start with the same runtime keeps what has been saved.
+        std::fs::write(&library, b"this runtime's pipelines").unwrap();
+        invalidate_other_runtime(dir.path());
+        assert_eq!(
+            std::fs::read(&library).unwrap(),
+            b"this runtime's pipelines"
+        );
     }
 
     #[test]

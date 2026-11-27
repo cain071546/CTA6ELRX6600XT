@@ -120,7 +120,13 @@ static SPARE: Mutex<Vec<Memory>> = Mutex::new(Vec::new());
 
 /// At most this much is kept (of the card's memory, with [`on_card`]).
 fn kept() -> u64 {
-    if on_card() { 256 << 20 } else { 768 << 20 }
+    if on_card() {
+        256 << 20
+    } else if crate::residency::limited_host_ram() {
+        192 << 20
+    } else {
+        512 << 20
+    }
 }
 
 /// Whether the memory lies in the card's memory, written by the CPU through
@@ -167,6 +173,11 @@ pub(super) fn give_back(memory: Memory) {
     while spare.iter().map(|m| m.size).sum::<u64>() > kept() {
         spare.remove(0);
     }
+}
+
+pub(super) fn trim() {
+    let dropped = std::mem::take(&mut *SPARE.lock().unwrap_or_else(|e| e.into_inner()));
+    drop(dropped);
 }
 
 /// Since the last frame-rate line: bytes copied, runs copied, words stored,
@@ -257,8 +268,8 @@ pub(super) fn take(host: &Host, dirty: &[(std::sync::Arc<Shadow>, Vec<(usize, us
 
 impl Own {
     /// Records the sends into `list`; the copies that `looked` says are in
-    /// `COPY_DEST`, the others in the common state. Those with a "before" are
-    /// left readable by compute shaders.
+    /// `COPY_DEST`, the others in the common state. Every buffer written is
+    /// left back in the common state, so the next shader read can promote it.
     ///
     /// # Safety
     /// An open list of ours, whose compute state is set anew behind this.
@@ -272,7 +283,7 @@ impl Own {
     ) {
         // (With `crate::host::upq`: a copy of the memory in the card's.)
         let source = from.unwrap_or(&self.memory.buffer);
-        let read = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+        let common = D3D12_RESOURCE_STATE_COMMON;
         let write = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
         let dest = D3D12_RESOURCE_STATE_COPY_DEST;
         let (mut first, mut last) = (Vec::new(), Vec::new());
@@ -288,12 +299,8 @@ impl Own {
                 }
                 state = Some(write);
             }
-            let hashed = shadow.card_sides().is_some_and(|(_, before, _)| before.is_some());
-            if let Some(was) = state
-                && hashed
-                && (!copy.runs.is_empty() || copy.pairs.1 > 0)
-            {
-                last.push(transition(&shadow.buffer, was, read));
+            if let Some(was) = state {
+                last.push(transition(&shadow.buffer, was, common));
             }
         }
         // SAFETY: the caller's; live objects.

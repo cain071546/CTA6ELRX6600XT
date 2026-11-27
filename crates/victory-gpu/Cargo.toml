@@ -23,6 +23,17 @@ blake3.workspace = true
 [dev-dependencies]
 tempfile.workspace = true
 
+# These harnesses need the `diagnostics` feature as well as Windows. Without
+# it the whole file is cfg'd out; building an empty harness would still apply
+# the Agility SDK /EXPORT flags from build.rs with no symbol to export.
+[[test]]
+name = "replay"
+required-features = ["diagnostics"]
+
+[[test]]
+name = "replay_big"
+required-features = ["diagnostics"]
+
 [features]
 # Debugging switches (frame capture, the host debug layer, per-draw data).
 diagnostics = []
