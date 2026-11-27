@@ -728,6 +728,8 @@ pub(crate) static HEAP_TEXTURES_WAITING: AtomicU64 = AtomicU64::new(0);
 /// Passes that made no texture because the card had no room
 /// (`crate::resource::room`), for the memory line.
 pub(crate) static HEAP_TEXTURES_FULL: AtomicU64 = AtomicU64::new(0);
+/// Passes stopped by `VICTORY_PICKED_UPLOAD_MB`, for the memory line.
+pub(crate) static HEAP_TEXTURES_CAPPED: AtomicU64 = AtomicU64::new(0);
 
 /// Frames after a whole upload of a texture picked by index at which its
 /// memory is looked at again, each counted from the look before.
@@ -769,6 +771,22 @@ fn heap_recheck() -> bool {
     static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
     *ON.get_or_init(|| std::env::var_os("VICTORY_HEAP_RECHECK").is_none_or(|v| v != "0"))
 }
+
+/// Gated behavioral A/B: a ceiling, in MiB, on the bytes uploaded by the
+/// index-picked texture pass in one run. Once reached, further uploads wait
+/// for later frames but never start, so the host copies made by this path
+/// stop growing. Default off: A uses the same binary with the knob absent.
+/// `[X]` No promotion without a duration-matched A/B and repeated evidence.
+fn picked_upload_cap() -> Option<u64> {
+    static CAP: std::sync::OnceLock<Option<u64>> = std::sync::OnceLock::new();
+    *CAP.get_or_init(|| {
+        std::env::var("VICTORY_PICKED_UPLOAD_MB")
+            .ok()
+            .and_then(|v| v.trim().parse::<u64>().ok())
+            .map(|mb| mb.saturating_mul(1 << 20))
+    })
+}
+
 /// Times a placed texture's slot was passed over because its memory is not
 /// mapped.
 pub(crate) static HEAP_TEXTURES_SAME: AtomicU64 = AtomicU64::new(0);
@@ -2239,6 +2257,8 @@ impl State {
     /// something reads them) and uploaded, as a table read would do, for
     /// shaders that pick them by a computed index. Within a budget of bytes
     /// per frame and in all; the rest waits for later lists and frames.
+    /// `VICTORY_PICKED_UPLOAD_MB` adds a run-long ceiling to that in-all
+    /// budget, so the host copies made by this pass stop growing.
     /// The most recently written slots first (`TextureQueue::due`); slots
     /// draws read through tables are not in the queue.
     /// shortcut: uploaded once, and again only when the title rewrites the
@@ -2409,7 +2429,19 @@ impl State {
         const MAX_DEFERRED_UPLOADS: usize = 64;
         let mut deferred_uploads = Vec::new();
         let mut served = true;
+        let picked_cap = picked_upload_cap();
         for (index, write) in due {
+            if picked_cap.is_some_and(|limit| HEAP_TEXTURE_BYTES.load(Ordering::Relaxed) >= limit) {
+                if HEAP_TEXTURES_CAPPED.fetch_add(1, Ordering::Relaxed) == 0 {
+                    tracing::info!(
+                        limit_mb = picked_cap.unwrap_or(0) >> 20,
+                        uploaded_mb = HEAP_TEXTURE_BYTES.load(Ordering::Relaxed) >> 20,
+                        "textures picked by index reached the VICTORY_PICKED_UPLOAD_MB ceiling; later uploads wait"
+                    );
+                }
+                served = false;
+                break;
+            }
             if SPENT.load(Ordering::Relaxed) >= bytes_at_most || began.elapsed() > span {
                 served = false;
                 break;
