@@ -1,0 +1,15 @@
+﻿
+
+RunId                 : 8gb37-b56d271-repeat
+Log                   : C:\Users\mrgre\AppData\Local\Temp\opencode\victory-8gb37-b56d271-repeat.log
+WindowCount           : 52
+NonzeroWindowCount    : 15
+MaxWaitMs             : 123.4
+MedianWaitMs          : 0
+P90WaitMs             : 6.7
+P99WaitMs             : 101.7
+SumWaitMs             : 371.3
+ShaderTranslatedLines : 2639
+
+
+

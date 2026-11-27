@@ -1,0 +1,1 @@
+﻿2026-11-27T07:21:28.491961Z INFO victory_gpu::copystat: texture hotness (VICTORY_TEXTURE_HOTNESS=1, diagnostics only): 105 live staging textures, 232015 recorded uses, max 27116; entries in buckets 0/1/2/3/4-7/8+: 0/0/0/0/0/105; bytes in those buckets: 0/0/0/0/0/46 MB; hot 4+ uses: 105 entries 48716190 MB of 48716190 MB live

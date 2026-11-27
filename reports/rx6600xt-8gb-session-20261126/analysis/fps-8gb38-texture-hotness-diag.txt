@@ -1,0 +1,22 @@
+﻿
+
+RunId         : 8gb38-texture-hotness-diag
+Log           : C:\Users\mrgre\AppData\Local\Temp\opencode\victory-8gb38-texture-hotness-diag.log
+SampleCount   : 51
+GapCount      : 50
+MinGapS       : 5.036242
+MedianGapS    : 5.542974
+MaxGapS       : 14.518024
+MeanFps       : 9.1
+MedianFps     : 5
+P90Fps        : 30
+P99Fps        : 30.7
+MinFps        : 0.3
+MaxFps        : 30.7
+MedianFrameMs : 200.4
+P90FrameMs    : 464.9
+P99FrameMs    : 3847.3
+MaxFrameMs    : 3847.3
+
+
+

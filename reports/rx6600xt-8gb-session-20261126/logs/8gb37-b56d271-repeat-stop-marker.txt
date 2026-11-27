@@ -1,0 +1,2 @@
+﻿8gb37-b56d271-repeat 5-minute cap reached at 2026-11-26T23:10:47.8950741-08:00; terminated game PID(s) ; victory.exe PID(s) 3824; launcher PID(s) 4240; scoped processes remaining: 1.
+8gb37-b56d271-repeat 1-minute read-only crash monitor ended at 2026-11-26T23:11:50.7014793-08:00; failure-marker hits: 0.

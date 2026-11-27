@@ -1,0 +1,15 @@
+﻿
+
+RunId                 : 8gb38-texture-hotness-diag
+Log                   : C:\Users\mrgre\AppData\Local\Temp\opencode\victory-8gb38-texture-hotness-diag.log
+WindowCount           : 51
+NonzeroWindowCount    : 17
+MaxWaitMs             : 125.1
+MedianWaitMs          : 0
+P90WaitMs             : 9.2
+P99WaitMs             : 101.2
+SumWaitMs             : 323.9
+ShaderTranslatedLines : 2636
+
+
+

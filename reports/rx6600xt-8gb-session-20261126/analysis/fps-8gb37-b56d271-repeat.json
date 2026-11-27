@@ -1,0 +1,19 @@
+﻿{
+    "RunId":  "8gb37-b56d271-repeat",
+    "Log":  "C:\\Users\\mrgre\\AppData\\Local\\Temp\\opencode\\victory-8gb37-b56d271-repeat.log",
+    "SampleCount":  52,
+    "GapCount":  51,
+    "MinGapS":  5.034053,
+    "MedianGapS":  5.514571,
+    "MaxGapS":  16.16262,
+    "MeanFps":  8.685,
+    "MedianFps":  5.4,
+    "P90Fps":  30,
+    "P99Fps":  30,
+    "MinFps":  0.1,
+    "MaxFps":  30,
+    "MedianFrameMs":  185,
+    "P90FrameMs":  237.2,
+    "P99FrameMs":  8079.4,
+    "MaxFrameMs":  8079.4
+}

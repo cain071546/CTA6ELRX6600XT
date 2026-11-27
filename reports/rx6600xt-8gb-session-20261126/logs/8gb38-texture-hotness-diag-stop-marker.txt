@@ -1,0 +1,2 @@
+﻿8gb38-texture-hotness-diag 5-minute cap reached at 2026-11-26T23:21:32.7161716-08:00; terminated game PID(s) ; victory.exe PID(s) 7156; launcher PID(s) 25016; scoped processes remaining: 1.
+8gb38-texture-hotness-diag 1-minute read-only crash monitor ended at 2026-11-26T23:22:35.3930841-08:00; failure-marker hits: 0.
