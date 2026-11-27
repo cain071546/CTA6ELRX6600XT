@@ -127,14 +127,16 @@
 
 | Rank | Fork commit | Local integration point | Switch/default | Risk | Disposition |
 |---|---|---|---|---|---|
-| 1 | `b56d271` upload deferral/retry | `[S]` `host.rs:1164-1172,2026-2031`; `draw.rs:2406-2409,2635-2648,2670-2679,2772`; existing `residency.rs:50,54,58` consumption retained | Default-on; `MAX_DEFERRED_UPLOADS=64`, retry at `frame+2`, existing 500 ms `upload_refused()` backoff retained | Medium | **Integrated** at active `3dd97a9`; rebuild-gated, no A/B result yet |
+| 1 | `b56d271` upload deferral/retry | `[S]` `host.rs:1164-1172,2026-2031`; `draw.rs:2406-2409,2635-2648,2670-2679,2772`; existing `residency.rs:50,54,58` consumption retained | Default-on; `MAX_DEFERRED_UPLOADS=64`, retry at `frame+2`, existing 500 ms `upload_refused()` backoff retained | Medium | **Integrated** at active `3dd97a9` and rebuilt into diag `F472D6BC...`; no A/B result yet |
 | 2 | `dc1a0c7` non-visual H2a–H2g bundle | Not applied; prior audit notes only | — | Medium | **Held** for isolated later A/B |
 | 3 | `d6dd31b` StaleSpan only | Not applied; prior audit notes only | — | Medium | **Held** for isolated later A/B; watch indexing rejected |
 | 4 | `0468adf`, `f16d63d`, visual/FFX/framegen/RT/script/test-hygiene | Not applied | — | — | **Rejected** |
 
-`[X]` Active integration commit `3dd97a91b36974de352c00f1ec5c0a06aebabaed` (`Integrate b56d271 upload deferral/retry hunks`) was pushed to `cain/main`; local `HEAD` and `cain/main` match and the working tree is clean. No `VICTORY_*` setting, wrapper, `HostPolicy`, FSR, visual, FFX/framegen, RT, script, or test-hygiene change was made. No game launch; no process termination.
+`[X]` Active integration commit `3dd97a91b36974de352c00f1ec5c0a06aebabaed` (`Integrate b56d271 upload deferral/retry hunks`) was pushed to `cain/main`; no `VICTORY_*` setting, wrapper, `HostPolicy`, FSR, visual, FFX/framegen, RT, script, or test-hygiene change was made. No game launch; no process termination.
 
 `[X]` Validation: `C:\Users\mrgre\AppData\Local\Temp\opencode\dark-integrate-cargo-check.txt` (`check_exit=0`); `C:\Users\mrgre\AppData\Local\Temp\opencode\dark-integrate-cargo-test.txt` (`test_exit=101`, 369 passed / 4 failed in `root.rs` host root-signature tests); `C:\Users\mrgre\AppData\Local\Temp\opencode\dark-integrate-cargo-test-baseline.txt` (identical 369 passed / 4 failed after stashing the two edited files, so failures are pre-existing/environmental); `C:\Users\mrgre\AppData\Local\Temp\opencode\dark-integrate-rustfmt-check.txt` (repo-wide pre-existing style differences; no unique new diff in the inserted lines).
+
+`[X]` User selected “Rebuild diag now”. Full rebuild log `C:\Users\mrgre\AppData\Local\Temp\opencode\rebuild-b56d271-profiles.log`: `2026-11-26T22:26:03.7566654-08:00` start, `22:28:06.3270383-08:00` end, `BelowNormal` priority; `debug_exit=0`, `release_exit=0`, `diag_exit=0`; 0 `error`/`failed`/`panic` matches. `[S]` Agility export remains `D3D12SDKVersion=620` (`crates\victory-shader\src\agility.rs:23`). SHA-256 debug `B41C858AAEFF21DB2DD29E98875850784B4FC7A4840950B3D3EBDAE9FB2D10DE`, release `F98954BD48712568945BBC38A1811E8C29F83D5F65853FF0B5F721B3146BEFB2`, diag `F472D6BCEE923407BB20F6DCCF106732D25154D7481F8F01B476635A7A08A083` (replaces `15D934F2...`). No game launch, warm, cache reuse, or process termination; wrapper `9B12E201...` unchanged and no scoped `victory.exe` / `game_scarlett_master.exe` processes remained. `[H]` Every existing pipeline cache is keyed to the old diag hash and must be treated as stale; any future run needs a fresh named cache and warm under `F472D6BC...`.
 
 ## What this report does not authorize
 

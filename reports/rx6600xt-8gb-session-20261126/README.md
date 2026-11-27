@@ -28,7 +28,7 @@
 
 ## Selective Dark integration
 
-`[X]` Only the six audited `b56d271` runtime hunks from `darksidexc/Dark-Victory-RX6600-I714700KF-VI` were applied to the active fork and committed as `3dd97a9` (`Integrate b56d271 upload deferral/retry hunks`), then pushed to `cain/main`. No game launch, A/B result, visual change, FFX/framegen/RT work, or wholesale merge was performed. `dc1a0c7` and `d6dd31b` remain held; all visual/script/test-hygiene and watch-indexing work remains rejected. `[S]` Details and validation logs are recorded in `state/CURRENT-STATE.md`, `state/evidence-ledger-20261126.md`, and `dark-integration/`.
+`[X]` Only the six audited `b56d271` runtime hunks from `darksidexc/Dark-Victory-RX6600-I714700KF-VI` were applied to the active fork and committed as `3dd97a9` (`Integrate b56d271 upload deferral/retry hunks`), then pushed to `cain/main`. All three victory profiles were rebuilt successfully under `BelowNormal` priority; diag SHA-256 changed from `15D934F2...` to `F472D6BC...`, so the runnable diag binary now contains the hunks. No game launch, warm, cache reuse, A/B result, visual change, FFX/framegen/RT work, or wholesale merge was performed. `dc1a0c7` and `d6dd31b` remain held; all visual/script/test-hygiene and watch-indexing work remains rejected. `[S]` Details and validation logs are recorded in `state/CURRENT-STATE.md`, `state/evidence-ledger-20261126.md`, and `dark-integration/`.
 
 ## Reboot gate
 
@@ -39,4 +39,4 @@
 3. No scoped `victory.exe` / `game_scarlett_master.exe` processes are running.
 4. Logs/markers from any new run use a fresh run ID and fresh named cache.
 
-`[X]` `H:\report.txt` was not touched. Only the audited six-hunk `b56d271` selective integration was applied at `3dd97a9`; all other fork candidates remain rebuild-gated in `state/evidence-ledger-20261126.md`.
+`[X]` `H:\report.txt` was not touched. Only the audited six-hunk `b56d271` selective integration was applied at `3dd97a9` and rebuilt into diag `F472D6BC...`; all other fork candidates remain rebuild-gated in `state/evidence-ledger-20261126.md`.

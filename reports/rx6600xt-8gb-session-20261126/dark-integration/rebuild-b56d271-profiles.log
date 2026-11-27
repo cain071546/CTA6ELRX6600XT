@@ -1,0 +1,38 @@
+2026-11-26T22:26:03.7566654-08:00 rebuild-b56d271-profiles start; process_priority=BelowNormal
+cargo.exe :    Compiling victory-gpu v0.1.0 (C:\users\mrgre\victory-7900XTX\crates\victory-gpu)
+At line:16 char:5
++     & cargo @($spec.args) 2>&1 | Tee-Object -FilePath $log -Append
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (   Compiling vi...es\victory-gpu):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Compiling victory-hle v0.1.0 (C:\users\mrgre\victory-7900XTX\crates\victory-hle)
+   Compiling victory v0.1.0 (C:\users\mrgre\victory-7900XTX\apps\victory)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 19.87s
+2026-11-26T22:26:25.0658713-08:00 debug_exit=0
+cargo.exe :    Compiling victory-gpu v0.1.0 (C:\users\mrgre\victory-7900XTX\crates\victory-gpu)
+At line:16 char:5
++     & cargo @($spec.args) 2>&1 | Tee-Object -FilePath $log -Append
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (   Compiling vi...es\victory-gpu):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Compiling victory-hle v0.1.0 (C:\users\mrgre\victory-7900XTX\crates\victory-hle)
+   Compiling victory v0.1.0 (C:\users\mrgre\victory-7900XTX\apps\victory)
+    Finished `release` profile [optimized + debuginfo] target(s) in 44.16s
+2026-11-26T22:27:09.3151934-08:00 release_exit=0
+cargo.exe :    Compiling victory-gpu v0.1.0 (C:\users\mrgre\victory-7900XTX\crates\victory-gpu)
+At line:16 char:5
++     & cargo @($spec.args) 2>&1 | Tee-Object -FilePath $log -Append
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (   Compiling vi...es\victory-gpu):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Compiling victory-hle v0.1.0 (C:\users\mrgre\victory-7900XTX\crates\victory-hle)
+   Compiling victory v0.1.0 (C:\users\mrgre\victory-7900XTX\apps\victory)
+    Finished `diag` profile [optimized + debuginfo] target(s) in 56.84s
+2026-11-26T22:28:06.2178057-08:00 diag_exit=0
+diag_hash=F472D6BCEE923407BB20F6DCCF106732D25154D7481F8F01B476635A7A08A083
+release_hash=F98954BD48712568945BBC38A1811E8C29F83D5F65853FF0B5F721B3146BEFB2
+debug_hash=B41C858AAEFF21DB2DD29E98875850784B4FC7A4840950B3D3EBDAE9FB2D10DE
+2026-11-26T22:28:06.3270383-08:00 rebuild-b56d271-profiles end
