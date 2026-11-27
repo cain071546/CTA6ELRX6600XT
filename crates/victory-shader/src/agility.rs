@@ -15,12 +15,12 @@
 
 /// The runtime's SDK version: the minor number of the
 /// `Microsoft.Direct3D.D3D12` package `cargo xtask agility` fetches
-/// (1.614.1). Keep the two in step. 614 is pinned rather than 620: the newer
-/// runtime removed the device on RDNA2 cards (Marvisak/VIctory#746); 614
-/// reaches SM 6.6 there and stays up.
+/// (1.620.2). Keep the two in step. User override on 2026-11-26: 620 replaces
+/// the earlier 614 pin despite the RDNA2 device-removal report
+/// (Marvisak/VIctory#746); pre-override evidence used 614.
 #[unsafe(no_mangle)]
 #[used]
-pub static D3D12SDKVersion: u32 = 614;
+pub static D3D12SDKVersion: u32 = 620;
 
 /// A C string pointer D3D12 reads once at device creation.
 #[repr(transparent)]

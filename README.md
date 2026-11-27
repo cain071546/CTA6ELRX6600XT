@@ -29,10 +29,11 @@ Frame-rate and memory measurements are from one machine only: Windows 11,
 Intel i9-12900K, 64 GB RAM, Radeon RX 7900 XTX, the Series X profile, ray
 tracing off. Device creation and shader translation were also checked on a
 Windows 10 22H2 machine with an RX 6600 XT (8,147 MiB dedicated VRAM, shader
-model 6.6 through the Agility SDK, mesh tier 1, waves 32/64). A full run with
-SDK 1.620.2 reached the world but removed the device; the runtime is pinned to
-1.614.1 now. The current low-VRAM stability evidence, including a completed
-10-minute capped run, is in "RX 6600 XT 8 GB status (2026-11-27)" below.
+model 6.6 through the Agility SDK, mesh tier 1, waves 32/64). A historical full
+run with SDK 1.620.2 reached the world but removed the device; on 2026-11-26
+the user explicitly overrode that pin and this checkout now installs 1.620.2
+for A/B testing. No post-override game run has been performed yet. Pre-override
+low-VRAM evidence is in "RX 6600 XT 8 GB status (2026-11-27)" below.
 
 | | |
 |---|---|
@@ -141,7 +142,7 @@ changed by this result.
 | `VICTORY_TEXTURE_BUDGET_MB=1792` | Kept in the stable aggregate, but not a stability fix by itself. It increased card usage while host OOM remained fatal in `8gb14`. |
 | `VICTORY_TEXTURE_STORE=<folder>` | Not a RAM fix. The source describes keeping up to 4 GiB in host memory and may raise VRAM. |
 | `VICTORY_CARD_ROOM_FOR_TARGETS_MB < 3072` | Unsafe. It removes the render-target reservation and lets textures overfill an 8 GB card. |
-| `VICTORY_KEEP_FREED=0`, SM 6.6 relaxation, Agility SDK 1.620.2 | Rejected stability invariants. Keep freed VRAM, keep SM 6.6, and keep Agility SDK 1.614.1. |
+| `VICTORY_KEEP_FREED=0`, SM 6.6 relaxation | Rejected stability invariants. Keep freed VRAM and keep SM 6.6. Agility SDK 1.620.2 was historically rejected but explicitly overridden by the user on 2026-11-26 for A/B testing; pre-override evidence used 1.614.1. |
 
 Instrumentation added for a texture-stream progress line was reverted after
 `8gb10` failed. `resource.rs` and `copystat.rs` are byte-identical to the
@@ -212,18 +213,20 @@ something is wrong. `-RayTracing` turns the title's ray-traced indirect light on
 
 Windows 10's in-box D3D12 runtime stops at shader model 6.5, so every translated
 pipeline is refused there even when the card supports 6.6. `cargo xtask agility`
-downloads Microsoft's Direct3D 12 Agility SDK 1.614.1, checks its published
+downloads Microsoft's Direct3D 12 Agility SDK 1.620.2, checks its published
 SHA-512, and copies `D3D12Core.dll` into `target\<profile>\D3D12\` beside each
 `victory.exe`, and into `target\<profile>\deps\D3D12\` for GPU-backed tests.
 Both export the SDK version and path that make D3D12 load it. Windows 11 uses
 its newer in-box runtime; the extra folders are harmless.
 `target\diag\victory.exe config` says whether the runtime is in place.
 
-The pin is deliberately 1.614.1, not the newer 1.620.2: on RDNA2 cards the
+The previous pin was deliberately 1.614.1, not 1.620.2: on RDNA2 cards the
 newer runtime reached SM 6.6 but then removed the device in the world
 (Marvisak/VIctory#746), while 1.614.1 reached SM 6.6 and stayed up on RX 6800
-XT and RX 6750 XT (Marvisak/VIctory#84). Do not replace the DLL with 620 just
-because it is newer.
+XT and RX 6750 XT (Marvisak/VIctory#84). The user explicitly overrode that pin
+on 2026-11-26 to test 1.620.2 on the RX 6600 XT. Treat all pre-override
+5-minute evidence as 1.614.1 evidence and do not claim post-override stability
+until a capped run passes.
 
 ### Low-VRAM cards
 

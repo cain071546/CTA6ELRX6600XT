@@ -1,0 +1,8 @@
+2026-11-26T21:07:07.5563078-08:00 probe_id=features-1.614.1
+2026-11-26T21:07:07.5693190-08:00 sdk_dir=C:\Users\mrgre\AppData\Local\Temp\opencode\agility-1.614.1-backup-20261126T205940\target\diag\D3D12
+2026-11-26T21:07:07.5727177-08:00 sdk_requested=614
+2026-11-26T21:07:07.5737180-08:00 core_dll=C:\Users\mrgre\AppData\Local\Temp\opencode\agility-1.614.1-backup-20261126T205940\target\diag\D3D12\D3D12Core.dll
+2026-11-26T21:07:07.5829982-08:00 core_product_version=1.614.1.0.20240716.3
+2026-11-26T21:07:07.5839985-08:00 core_sha256=8A23D826B25B4329522FF451CB52B7F2B34D7F2913CFEB878371CE8BD765FE2D
+2026-11-26T21:07:07.5849997-08:00 note=read-only device probe; no victory.exe or game process launched by this probe
+2026-11-26T21:07:07.6994119-08:00 sdk_export=614 model_hr=0x00000000 highest_shader_model=0x66 options7_hr=0x00000000 mesh_shader_tier=10 sampler_feedback_tier=100

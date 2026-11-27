@@ -20,14 +20,16 @@ use sha2::{Digest, Sha512};
 /// `crates/victory-shader/src/agility.rs`, which the app re-exports: keep the
 /// two in step.
 ///
-/// 1.620.2 removed the device on RDNA2 cards (Marvisak/VIctory#746 and the
-/// RX 6800 XT report in #84). 1.614.1 reaches SM 6.6 there and stays up, so
-/// this fork pins the older runtime until the newer one is known good.
-const VERSION: &str = "1.614.1";
+/// User override on 2026-11-26: install 1.620.2 for an A/B test despite the
+/// earlier RDNA2 device-removal report (Marvisak/VIctory#746). The previous
+/// pin was 1.614.1 (#84); every pre-override run remains 1.614.1 evidence.
+/// This change does not authorize a game launch.
+const VERSION: &str = "1.620.2";
 /// The package's SHA-512, as nuget.org's catalog gives it (base64
-/// `BbqlUjFo…10S0Lw==`).
-const SHA512: &str = "05baa55231684ab10a3e905c9b85ce78f04ade9360f7de84a06bbae3bfc3123b\
-                      cccaa563647a25e151cc759106bc19e37740ef78563592d28e3a723fd744b42f";
+/// `1oP/f1cm…NQ==`).
+const SHA512: &str = "d683ff7f5726906c3f43d299f6cdd4b1cad22f8329ccd27b3492d0a1\
+                      413d9904102b8d543419bec3b3545c86bf49f6a500ebf42d95c999aa0\
+                      969e5d693032735";
 /// What we take from the package.
 const FILES: &[&str] = &[
     "build/native/bin/x64/D3D12Core.dll",

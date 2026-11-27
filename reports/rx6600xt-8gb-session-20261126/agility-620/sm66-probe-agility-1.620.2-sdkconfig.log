@@ -1,0 +1,9 @@
+2026-11-26T21:05:34.9902634-08:00 probe_id=sm66-probe-agility-1.620.2-sdkconfig
+2026-11-26T21:05:35.0098140-08:00 sdk_dir=C:\users\mrgre\victory-7900XTX\target\diag\D3D12
+2026-11-26T21:05:35.0098140-08:00 core_dll=C:\users\mrgre\victory-7900XTX\target\diag\D3D12\D3D12Core.dll
+2026-11-26T21:05:35.0188226-08:00 core_product_version=1.620.2.0.20261106.5
+2026-11-26T21:05:35.0198236-08:00 core_sha256=70A6D47D335B4A15180544C01A35B84474522A369DC582D85FE057313A3AEAA0
+2026-11-26T21:05:35.0208239-08:00 note=SDKConfiguration1 device probe selecting SDK 620 from the installed folder; no victory.exe or game process launched by this probe
+2026-11-26T21:05:35.1854855-08:00 model_hr=0x00000000 highest_shader_model=0x66 options7_hr=0x00000000 mesh_shader_tier=10 sampler_feedback_tier=100
+2026-11-26T21:05:35.3395301-08:00 post_probe_victory_or_game_process_count=1
+2026-11-26T21:05:35.3455344-08:00 post_probe_process=13032:victory.exe:"H:\klbf-lab\target\release\victory.exe" translate --cache --pipelines --jobs 8 C:\users\mrgre\downloads\GTA6\shaders.rpf

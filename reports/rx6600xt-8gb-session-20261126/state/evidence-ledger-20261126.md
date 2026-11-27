@@ -126,3 +126,10 @@
 - No treating a 5-minute zero-failure run as proof of 20-minute stability.
 - No `H:\report.txt` replacement.
 - No source edit or rebuild while `8gb30-minimal-stable` is active.
+
+## Agility 1.620.2 SM 6.6 evidence and rebuild (2026-11-26)
+
+- `[M]` `sm66-probe-agility-1.620.2-sdkconfig`, full log `C:\Users\mrgre\AppData\Local\Temp\opencode\sm66-probe-agility-1.620.2-sdkconfig.log`; `[M]` comparison logs `C:\Users\mrgre\AppData\Local\Temp\opencode\features-1.614.1.log` and `C:\Users\mrgre\AppData\Local\Temp\opencode\features-1.620.2.log`. Sample declaration: **one device and two `CheckFeatureSupport` calls per log; no time series or interval**.
+- `[X]` At `21:05-21:07-08:00`, read-only `ID3D12SDKConfiguration1::CreateDeviceFactory` probes reported `highest_shader_model=0x66`, `mesh_shader_tier=10`, `sampler_feedback_tier=100` for both `1.614.1` (`D3D12Core.dll` SHA-256 `8A23D826...`) and `1.620.2` (`70A6D47D...`). `[H]` The new runtime exposes no additional queried SM 6.6 capability over the old one.
+- `[S]` `crates\victory-shader\src\emit\host.rs:205-212` already refuses devices below SM 6.6; `crates\victory-shader\src\emit\mod.rs:2,17,55,66,76` documents SM 6.6 descriptors/mesh/rectangle emission; `crates\victory-gpu\src\pipeline\library.rs:70-88` invalidates pipeline caches when `agility-sdk.txt` changes.
+- `[X]` User-approved rebuild completed `21:07-21:10-08:00`, full log `C:\Users\mrgre\AppData\Local\Temp\opencode\rebuild-all-profiles-1.620.2.log`; exits debug/release/diag all `0`. SHA-256 debug `F8255CCF...`, release `7C1EFFAD...`, diag `15D934F2...`. No game launch, no shader/pipeline cache warm; all `cache-*` folders still have `agility-sdk.txt` = `614` and will be invalidated on first use.

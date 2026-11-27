@@ -1,0 +1,9 @@
+2026-11-26T21:05:06.0550408-08:00 probe_id=sm66-probe-agility-1.620.2
+2026-11-26T21:05:06.0700550-08:00 dll=C:\users\mrgre\victory-7900XTX\target\diag\D3D12\D3D12Core.dll
+2026-11-26T21:05:06.0790626-08:00 dll_product_version=1.620.2.0.20261106.5
+2026-11-26T21:05:06.0820654-08:00 dll_file_version=1.620.2.0.20261106.5
+2026-11-26T21:05:06.0820654-08:00 dll_sha256=70A6D47D335B4A15180544C01A35B84474522A369DC582D85FE057313A3AEAA0
+2026-11-26T21:05:06.0830664-08:00 note=direct D3D12Core.dll device probe; no victory.exe or game process started
+2026-11-26T21:05:06.0890719-08:00 sdk_export=620 get_interface_failed=0x80004002
+2026-11-26T21:05:06.3356096-08:00 post_probe_scoped_processes=1
+2026-11-26T21:05:06.3376114-08:00 post_probe_scoped_process_list=13032:victory.exe

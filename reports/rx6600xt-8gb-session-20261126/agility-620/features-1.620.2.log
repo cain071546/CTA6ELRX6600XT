@@ -1,0 +1,8 @@
+2026-11-26T21:07:07.7164275-08:00 probe_id=features-1.620.2
+2026-11-26T21:07:07.7174283-08:00 sdk_dir=C:\users\mrgre\victory-7900XTX\target\diag\D3D12
+2026-11-26T21:07:07.7174283-08:00 sdk_requested=620
+2026-11-26T21:07:07.7184293-08:00 core_dll=C:\users\mrgre\victory-7900XTX\target\diag\D3D12\D3D12Core.dll
+2026-11-26T21:07:07.7194302-08:00 core_product_version=1.620.2.0.20261106.5
+2026-11-26T21:07:07.7204311-08:00 core_sha256=70A6D47D335B4A15180544C01A35B84474522A369DC582D85FE057313A3AEAA0
+2026-11-26T21:07:07.7214423-08:00 note=read-only device probe; no victory.exe or game process launched by this probe
+2026-11-26T21:07:07.7864913-08:00 sdk_export=620 model_hr=0x00000000 highest_shader_model=0x66 options7_hr=0x00000000 mesh_shader_tier=10 sampler_feedback_tier=100
