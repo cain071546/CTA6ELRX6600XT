@@ -1,0 +1,19 @@
+{
+    "RunId":  "8gb32-port-constants",
+    "Log":  "C:\\Users\\mrgre\\AppData\\Local\\Temp\\opencode\\victory-8gb32-port-constants.log",
+    "SampleCount":  50,
+    "GapCount":  49,
+    "MinGapS":  3.187017,
+    "MedianGapS":  5.53265,
+    "MaxGapS":  15.457438,
+    "MeanFps":  8.168,
+    "MedianFps":  4.5,
+    "P90Fps":  30,
+    "P99Fps":  30.2,
+    "MinFps":  0.5,
+    "MaxFps":  30.2,
+    "MedianFrameMs":  221.3,
+    "P90FrameMs":  748.6,
+    "P99FrameMs":  2136.5,
+    "MaxFrameMs":  2136.5
+}

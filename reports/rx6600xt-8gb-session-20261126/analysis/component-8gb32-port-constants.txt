@@ -1,0 +1,60 @@
+RUN 8gb32-port-constants
+LOG C:\Users\mrgre\AppData\Local\Temp\opencode\victory-8gb32-port-constants.log
+LINES 69556
+FAILURE_MARKER_HITS 0
+MEMORY_SERIES samples=50 gaps=49 cadence=nominal-5s gap_min=3.471117 gap_median=5.528467 gap_max=15.459179
+PRESENT_TO_FIRST_LIST_MS_SERIES samples=50 cadence=stats-window~5s median=18.4 p90=46.4 p99=130.9 max=222 sum=1451.6
+LAST_SUBMIT_TO_PRESENT_MS_SERIES samples=50 cadence=stats-window~5s median=21.4 p90=51.7 p99=122.2 max=129.4 sum=1498.3
+LIST_RESET_MS_SERIES samples=50 cadence=stats-window~5s median=12.7 p90=25.3 p99=55.6 max=88 sum=788.1
+PIPELINE_WAIT_MS_SERIES samples=50 cadence=stats-window~5s median=0 p90=8.5 p99=29.2 max=96.7 sum=202.1
+CPU_USER_MS_ALL_THREADS_SERIES samples=50 cadence=stats-window~5s median=844 p90=1247 p99=1411 max=1599 sum=40480
+CPU_KERNEL_MS_ALL_THREADS_SERIES samples=50 cadence=stats-window~5s median=174 p90=1348 p99=1898 max=4292 sum=23489
+HOST_LIST_MAKE_MS_SERIES samples=41 cadence=stats-window~5s median=52.3 p90=145.5 p99=180.8 max=233.6 sum=3035
+REFRESH_MB_PER_FRAME_SERIES samples=50 cadence=stats-window~5s median=17346.8 p90=19921.6 p99=21043.9 max=21133.5 sum=694351
+WATCH_MS_PER_FRAME_SERIES samples=50 cadence=stats-window~5s median=11.54 p90=38.85 p99=53.1 max=70.32 sum=786.77
+PAGE_FAULTS_PER_FRAME_SERIES samples=50 cadence=stats-window~5s median=33124 p90=84110 p99=126026 max=224598 sum=2172367
+BACK_SCAN_MS_PER_FRAME_SERIES samples=50 cadence=stats-window~5s median=21.5 p90=39.2 p99=46.6 max=48.3 sum=1086.4
+SNAPSHOT_MS_PER_FRAME_SERIES samples=10 cadence=stats-window~5s median=0 p90=0 p99=0 max=36.6 sum=36.6
+COMPARE_BACK_MB_PER_FRAME_SERIES samples=41 cadence=stats-window~5s median=200.2 p90=208.9 p99=216 max=229.9 sum=8006
+LAST_GROUP [copies per frame:]
+2026-11-27T04:17:28.010896Z  INFO victory_gpu::copystat: copies per frame: 17.1 
+submissions; 13892 title copies 7.3 MB; 24846 refreshes 19221.1 MB, 0 skipped 0.0 MB; 52 runs 0.0 ms; 0 queries 0.00 
+ms, moves 17.51 ms, 0.02 MB unmapped; 30734 page faults; 332 watches 11.23 ms, 6338.1 MB checked, 6292.2 MB unchanged; 
+0.1 fallbacks; 267 guard faults; textures 0.1 MB watched and changed, 19.0 MB hashed, 0.0 MB of them changed, 0.0 
+changes the guard did not see
+LAST_GROUP [recording per frame]
+2026-11-27T04:17:28.010919Z  INFO victory_gpu::copystat: recording per frame (28 
+frames): 41313 list calls 591.7 ms (all recording threads); 0.0 ms waiting for pipelines; dynamic slots: 12990 tables 
+asked, 0 refused, 2.8 ms searching; notes 0.0 ms; shader-written ranges: 527 steps in 0.0 submissions, snapshots 32.2 
+ms, 200.2 MB compared back; sparse reads 0.0 ms; guards 7.6 ms; 42.5 MB copied whole (memory not watched); 2.0 frame 
+waits sleeping 0.0 ms (all threads); ranges of shaders that cannot store to buffers: 18 steps 754.0 MB left out
+LAST_GROUP [frame account per frame:]
+2026-11-27T04:17:28.011027Z  INFO victory_gpu::copystat: frame account per frame: 
+after a present 11.1 ms until the first list call and 0.2 ms until the first submission; 15.6 ms from the last 
+submission to the present call; lists reset in 12.6 ms; the process ran 836 ms user + 142 ms kernel on all threads; 
+what shaders wrote: 20.1 ms finding 0 pieces that differ, 0.0 ms putting them back; texture uploads: 1 recorded, 366 
+left out; 0.0 held submissions run at the present with their waits not met; waits for memory values: 36 looks 0.0 ms; 
+57 host lists made 29.1 ms; 0 parts of held submissions ran alone that the next part could have run with
+LAST_GROUP [waiting for the card per frame:]
+NONE
+LAST_GROUP [the card's time by what ran:]
+NONE
+LAST_GROUP [the card's time by list (timing run), per frame,]
+NONE
+LAST_GROUP [copied whole (memory not watched):]
+NONE
+LAST_GROUP [INFO victory_gpu::copystat: memory: ]
+2026-11-27T04:17:28.015225Z  INFO victory_gpu::copystat: memory: 17379 MB private 
+(3843 MB of it in memory; the PC has 887 MB free and 7841 MB left to commit); host copies of title memory: 4631 alive 
+3957 MB, of them 804 windows outside buffers 3320 MB; snapshot buffers kept: 0 reserving 0 MB; staging of textures: 
+110 alive 51 MB, 110 kept by their texture; host textures: 1217 alive 1600 MB, 1657 placed in title memory; made so 
+far: 9245 upload buffers 17083 MB, 32601 shared buffers 6819 MB, 70160 card buffers 3715 MB
+LAST_GROUP [memory by category]
+2026-11-27T04:17:28.016876Z  INFO victory_gpu::copystat: memory by category 
+(VICTORY_MEMORY_CATEGORIES=1, approximate and overlapping, not a sum): working set 3843 MB, private total 17379 MB, 
+free physical 887 MB, commit headroom 7841 MB, host lists alive 0 MB, lists never reset 0 MB, list scratch live 164 
+MB, list scratch spare 32 MB, list other uploads 0 MB, private growth making lists 17631 MB, title window copies 3957 
+MB, window pages copied 2274 MB, window held by lists 3304 MB, window without a length 2512 MB, texture host copies 
+1380 MB, texture title-fill copies 214 MB, texture pool 448 MB, staging pool 128 MB, live texture staging 51 MB, 
+descriptor views 64 MB, shader containers 189 MB, translations 161 MB, pipeline library file 0 MB, our rust heap 1555 
+MB, made upload buffers so far 17083 MB, made shared buffers so far 6819 MB, made card buffers so far 3715 MB

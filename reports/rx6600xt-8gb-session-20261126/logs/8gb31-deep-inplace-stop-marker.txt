@@ -1,0 +1,2 @@
+﻿8gb31-deep-inplace 5-minute cap reached at 2026-11-26T19:46:27.4422600-08:00; terminated game PID(s) ; victory.exe PID(s) 26688; launcher PID(s) 20680; scoped processes remaining: 1.
+8gb31-deep-inplace 1-minute read-only crash monitor ended at 2026-11-26T19:47:30.1682690-08:00; failure-marker hits: 0.

@@ -1,0 +1,2 @@
+﻿8gb32-port-constants 5-minute cap reached at 2026-11-26T20:17:33.0064441-08:00; terminated game PID(s) ; victory.exe PID(s) 21864; launcher PID(s) 8996; scoped processes remaining: 1.
+8gb32-port-constants 1-minute read-only crash monitor ended at 2026-11-26T20:18:35.7559884-08:00; failure-marker hits: 0.

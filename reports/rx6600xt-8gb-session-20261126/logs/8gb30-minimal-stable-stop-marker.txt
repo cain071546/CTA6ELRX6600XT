@@ -1,0 +1,2 @@
+﻿8gb30-minimal-stable 5-minute cap reached at 2026-11-26T19:39:13.0412245-08:00; terminated game PID(s) ; victory.exe PID(s) 22740; launcher PID(s) 2428; scoped processes remaining: 1.
+8gb30-minimal-stable 1-minute read-only crash monitor ended at 2026-11-26T19:40:15.6236501-08:00; failure-marker hits: 0.

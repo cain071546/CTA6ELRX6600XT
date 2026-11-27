@@ -1,0 +1,19 @@
+{
+    "RunId":  "8gb30-minimal-stable",
+    "Log":  "C:\\Users\\mrgre\\AppData\\Local\\Temp\\opencode\\victory-8gb30-minimal-stable.log",
+    "SampleCount":  53,
+    "GapCount":  52,
+    "MinGapS":  5.043441,
+    "MedianGapS":  5.469467,
+    "MaxGapS":  9.338927,
+    "MeanFps":  9.394,
+    "MedianFps":  5.6,
+    "P90Fps":  30,
+    "P99Fps":  31,
+    "MinFps":  0.8,
+    "MaxFps":  31,
+    "MedianFrameMs":  177.7,
+    "P90FrameMs":  426.6,
+    "P99FrameMs":  1260.2,
+    "MaxFrameMs":  1260.2
+}
