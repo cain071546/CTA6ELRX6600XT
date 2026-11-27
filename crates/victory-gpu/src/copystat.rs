@@ -1053,6 +1053,9 @@ fn log_memory() {
             category_text(fields)
         );
     }
+    if let Some(line) = crate::texture::hotness_line() {
+        tracing::info!("{line}");
+    }
 }
 
 /// Microseconds since the first call.

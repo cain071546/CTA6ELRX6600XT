@@ -77,6 +77,9 @@ pub(crate) struct Staging {
     uploaded: std::sync::atomic::AtomicBool,
     /// When a list last recorded a use of it (`crate::host::moment`).
     used: std::sync::atomic::AtomicU64,
+    /// How many list recordings sampled it, for diagnostics-only hotness.
+    /// Never used to change admission or eviction by itself.
+    uses: std::sync::atomic::AtomicU64,
     /// How many bytes of the texture's memory were mapped when a list last
     /// recorded an upload of it ([`fill_unlocked`]; 0: not asked).
     expected: std::sync::atomic::AtomicU64,
@@ -128,6 +131,80 @@ const HOT_FRAMES: u64 = 64;
 fn hot_textures() -> bool {
     static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
     *ON.get_or_init(|| std::env::var_os("VICTORY_TEXTURE_HOT").is_none_or(|v| v != "0"))
+}
+
+/// Diagnostics-only per-texture use counts (`VICTORY_TEXTURE_HOTNESS=1`,
+/// default off). Nothing here changes which textures are admitted or kept;
+/// the first step is only to see whether a small set of textures accounts for
+/// most of the recorded samples.
+pub(crate) fn hotness() -> bool {
+    static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *ON.get_or_init(|| std::env::var_os("VICTORY_TEXTURE_HOTNESS").is_some_and(|v| v == "1"))
+}
+
+fn hotness_bucket(uses: u64) -> usize {
+    match uses {
+        0 => 0,
+        1 => 1,
+        2 => 2,
+        3 => 3,
+        4..=7 => 4,
+        _ => 5,
+    }
+}
+
+/// One memory line when hotness diagnostics are on: live staging entries by
+/// recorded uses and bytes, so a later change can rank hot textures without
+/// guessing. Reads the table under its lock and changes nothing.
+pub(crate) fn hotness_line() -> Option<String> {
+    if !hotness() {
+        return None;
+    }
+    use std::sync::atomic::Ordering::Relaxed;
+    let map = STAGING.lock().unwrap_or_else(|e| e.into_inner());
+    let mut counts = [0u64; 6];
+    let mut bytes = [0u64; 6];
+    let mut total_uses = 0u64;
+    let mut max_uses = 0u64;
+    if let Some(map) = map.as_ref() {
+        for s in map.values() {
+            let uses = s.uses.load(Relaxed);
+            let bucket = hotness_bucket(uses);
+            counts[bucket] += 1;
+            bytes[bucket] += s.bytes;
+            total_uses += uses;
+            max_uses = max_uses.max(uses);
+        }
+    }
+    let entries: u64 = counts.iter().sum();
+    let live_bytes: u64 = bytes.iter().sum();
+    let hot_entries = counts[4] + counts[5];
+    let hot_bytes = bytes[4] + bytes[5];
+    let bucket_bytes = bytes.iter().map(|b| (b >> 20).to_string()).collect::<Vec<_>>().join("/");
+    Some(format!(
+        "texture hotness (VICTORY_TEXTURE_HOTNESS=1, diagnostics only): {entries} live staging textures, \
+         {total_uses} recorded uses, max {max_uses}; entries in buckets 0/1/2/3/4-7/8+: \
+         {}/{}/{}/{}/{}/{}; bytes in those buckets: {bucket_bytes} MB; hot 4+ uses: {hot_entries} entries \
+         {hot_bytes} MB of {live_bytes} MB live",
+        counts[0], counts[1], counts[2], counts[3], counts[4], counts[5]
+    ))
+}
+
+#[cfg(test)]
+mod hotness_tests {
+    use super::hotness_bucket;
+
+    #[test]
+    fn use_counts_map_to_stable_diagnostic_buckets() {
+        assert_eq!(hotness_bucket(0), 0);
+        assert_eq!(hotness_bucket(1), 1);
+        assert_eq!(hotness_bucket(2), 2);
+        assert_eq!(hotness_bucket(3), 3);
+        assert_eq!(hotness_bucket(4), 4);
+        assert_eq!(hotness_bucket(7), 4);
+        assert_eq!(hotness_bucket(8), 5);
+        assert_eq!(hotness_bucket(u64::MAX), 5);
+    }
 }
 
 // SAFETY: the staging mapping is written only at submission, under
@@ -765,6 +842,9 @@ pub(crate) fn upload_from(list: &HostList, resource: This, first: u32) {
         staging.once.store(false, Relaxed);
     }
     staging.used.store(crate::host::moment(), Relaxed);
+    if hotness() {
+        staging.uses.fetch_add(1, Relaxed);
+    }
     // Levels on demand: a view of the texture now starts at another
     // level, or another texture now starts inside its span, with no byte
     // of its memory changed. The levels are judged anew: detiled again at
@@ -1943,6 +2023,7 @@ fn staging(resource: This, copy: &crate::resource::HostTexture, first: u32) -> O
         dirty: std::sync::atomic::AtomicBool::new(true),
         uploaded: std::sync::atomic::AtomicBool::new(false),
         used: std::sync::atomic::AtomicU64::new(crate::host::moment()),
+        uses: std::sync::atomic::AtomicU64::new(0),
         expected: std::sync::atomic::AtomicU64::new(0),
         on_demand,
         detiled: std::sync::atomic::AtomicU32::new(0),
