@@ -185,8 +185,9 @@ pub(crate) fn hotness_line() -> Option<String> {
         "texture hotness (VICTORY_TEXTURE_HOTNESS=1, diagnostics only): {entries} live staging textures, \
          {total_uses} recorded uses, max {max_uses}; entries in buckets 0/1/2/3/4-7/8+: \
          {}/{}/{}/{}/{}/{}; bytes in those buckets: {bucket_bytes} MB; hot 4+ uses: {hot_entries} entries \
-         {hot_bytes} MB of {live_bytes} MB live",
-        counts[0], counts[1], counts[2], counts[3], counts[4], counts[5]
+         {} MB of {} MB live",
+        counts[0], counts[1], counts[2], counts[3], counts[4], counts[5],
+        hot_bytes >> 20, live_bytes >> 20
     ))
 }
 
