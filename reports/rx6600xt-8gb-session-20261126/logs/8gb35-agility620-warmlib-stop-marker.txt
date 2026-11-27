@@ -1,0 +1,2 @@
+﻿8gb35-agility620-warmlib 5-minute cap reached at 2026-11-26T21:51:10.2125883-08:00; terminated game PID(s) ; victory.exe PID(s) 6528; launcher PID(s) 16048; scoped processes remaining: 1.
+8gb35-agility620-warmlib 1-minute read-only crash monitor ended at 2026-11-26T21:52:13.5833484-08:00; failure-marker hits: 0.

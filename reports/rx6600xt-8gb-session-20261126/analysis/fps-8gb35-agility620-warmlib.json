@@ -1,0 +1,19 @@
+﻿{
+    "RunId":  "8gb35-agility620-warmlib",
+    "Log":  "C:\\Users\\mrgre\\AppData\\Local\\Temp\\opencode\\victory-8gb35-agility620-warmlib.log",
+    "SampleCount":  50,
+    "GapCount":  49,
+    "MinGapS":  5.033563,
+    "MedianGapS":  5.578663,
+    "MaxGapS":  10.725357,
+    "MeanFps":  8.152,
+    "MedianFps":  4.9,
+    "P90Fps":  30,
+    "P99Fps":  30,
+    "MinFps":  0.7,
+    "MaxFps":  30,
+    "MedianFrameMs":  205.2,
+    "P90FrameMs":  409.6,
+    "P99FrameMs":  1503.5,
+    "MaxFrameMs":  1503.5
+}
