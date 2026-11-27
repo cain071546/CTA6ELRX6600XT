@@ -1,6 +1,6 @@
 # Current state — VIctory 8 GB / 16 GB work
 
-Single entry point for the active work. Historical detail stays in `streaming-plan-20261126.md`; nothing here replaces it. Updated `2026-11-26T20:44:20.2137353-08:00`.
+Single entry point for the active work. Historical detail stays in `streaming-plan-20261126.md`; nothing here replaces it. Updated `2026-11-26T20:50:43.5516812-08:00`.
 
 ## 1. Objective and priority
 
@@ -55,6 +55,8 @@ Previously rejected and still excluded: `VICTORY_FILL_TITLE`, `VICTORY_JOIN_BARR
 - `[H]` Rationale for `8gb33`: combine the best measured tail profile (`8gb31`) with the memory/card-buffer improvements (`8gb32`) under the new 64 GB page file. It is not scene-matched to either prior run, and 0 failure markers under 5 minutes remain only a short-run stability gate.
 - `[X]` Driver update completed at `20:44:20-08:00`: AMD Radeon RX 6600 XT driver changed from `32.0.21045.16010` (`2026-10-15`) to `32.0.21045.29003` (`2026-11-16`); device ID remains `0x73ff`; OS remains Windows 10 Home `10.0.19045`. `[S]` The current binary already reaches SM 6.6 via pinned Agility SDK `1.614.1` (`handoff-report.md:16,25-27`; `host.rs:4140-4167`; `mesh=true` in `8gb30`/`8gb32` logs). User explicitly chose **no rebuild**; same-source rebuild or Agility `1.620.2` upgrade is not authorized. Guard hashes unchanged: build `26E124D8...`, wrapper `9B12E201...`; page file still `65,536 MB`; no scoped game/victory processes; git clean at `5f52e46`.
 - `[H]` Any later `8gb33` run is a post-driver run and is not directly comparable to pre-driver `8gb30/31/32` evidence. Expect to recheck driver version, page file, hashes, and process state again after this next reboot.
+- `[X]` Second reboot completed at `2026-11-26T20:45:49-08:00`; post-reboot gate rechecked at `20:50:19-08:00`. Driver remains `32.0.21045.29003` (`2026-11-16`) on device `0x73ff`; `C:\pagefile.sys` remains fixed at `65,536 MB`; commit limit `79.93 GiB`, free `67.75 GiB`; build hash `26E124D8...`; wrapper hash `9B12E201...`; no `victory.exe` / `game_scarlett_master.exe` processes; git clean at `9fee833`. Both `8gb33` scripts still parse with 0 errors, launcher hash still `6E163C89D136931E38F57EFD97CC0E57EFCDF4FB8EE48F3EFB47120F8485593D`; log, markers, and fresh cache remain ABSENT; warm cache source files remain PRESENT. **8gb33 is ready but held; no launch until explicit approval.**
+- `[X]` User direction at `20:50:43-08:00`: “we still don't have SM 6.6, forget that for now.” SM 6.6 is removed from active planning regardless of earlier `mesh=true` log evidence. No rebuild, no Agility change, no SM 6.6 relaxation, and no new SM 6.6-dependent run. Keep the existing hard guard and proceed only with already-staged local 5-minute experiments such as `8gb33` if explicitly approved.
 - Historical only: `invoke/launch-8gb22/23/24-20m-*.ps1` (superseded 20-minute scripts; setting references only).
 - Documents: `streaming-plan-20261126.md`, `sampler-feedback-experiment-prompt.md`, `memory-switch-inventory.md`, `evidence-ledger-20261126.md` (comparative-report backlog + all three eight-repo shortlists + `8gb30/31/32` profiles), `repo-ref-check-20261126.md` (eight-repo ref ledger), `CURRENT-STATE.md`.
 - Read-only analyzers/outputs: `analyze-component-profile.ps1`, `analyze-fps.ps1`, `cap-5min.ps1`, `component-8gb30/31/32*.txt`, `fps-8gb30/31/32.json`.
