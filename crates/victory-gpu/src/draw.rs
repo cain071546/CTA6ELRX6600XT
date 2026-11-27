@@ -2403,6 +2403,10 @@ impl State {
         };
         let began = std::time::Instant::now();
         BAKE_SERVED.store(0, Ordering::Relaxed);
+        // A large texture can need a new staging block while smaller ones
+        // still fit existing blocks. Limit the extra search on a full pool.
+        const MAX_DEFERRED_UPLOADS: usize = 64;
+        let mut deferred_uploads = Vec::new();
         let mut served = true;
         for (index, write) in due {
             if SPENT.load(Ordering::Relaxed) >= bytes_at_most || began.elapsed() > span {
@@ -2628,11 +2632,20 @@ impl State {
             }
             // The first upload of a texture no list has used: on a queue of
             // its own, and the slot shows it as soon as that has run.
+            crate::residency::take_staging_deferred();
             let ahead = if late && !tabled && texture.is_some_and(crate::pool::fresh) {
                 crate::texture::ahead::take(resource, first, there.filter(|_| partly.is_none()).unwrap_or(u64::MAX))
             } else {
                 None
             };
+            if crate::residency::take_staging_deferred() {
+                deferred_uploads.push((index, write));
+                served = false;
+                if baking || deferred_uploads.len() >= MAX_DEFERRED_UPLOADS {
+                    break;
+                }
+                continue;
+            }
             if let Some(ahead) = &ahead {
                 use crate::texture::ahead::Taken;
                 let (Taken::New(job) | Taken::Known(job)) = ahead;
@@ -2656,9 +2669,15 @@ impl State {
             }
             // A staging buffer refused or put off (`crate::residency`) leaves
             // the slot due: marking it served would lose its only retry.
-            if ahead.is_none()
-                && (crate::residency::take_staging_deferred() || crate::residency::upload_refused())
-            {
+            if ahead.is_none() && crate::residency::take_staging_deferred() {
+                deferred_uploads.push((index, write));
+                served = false;
+                if baking || deferred_uploads.len() >= MAX_DEFERRED_UPLOADS {
+                    break;
+                }
+                continue;
+            }
+            if ahead.is_none() && crate::residency::upload_refused() {
                 served = false;
                 break;
             }
@@ -2750,6 +2769,7 @@ impl State {
                 None => host.texture_slot_done(index, write, again),
             }
         }
+        host.texture_slots_retry_uploads(&deferred_uploads, frame.saturating_add(2));
         if baking && served {
             BAKE_SERVED.store(host.texture_news().0 + 1, Ordering::Relaxed);
         }
