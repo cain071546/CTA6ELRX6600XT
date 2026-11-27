@@ -77,8 +77,9 @@ pub(crate) struct Staging {
     uploaded: std::sync::atomic::AtomicBool,
     /// When a list last recorded a use of it (`crate::host::moment`).
     used: std::sync::atomic::AtomicU64,
-    /// How many list recordings sampled it, for diagnostics-only hotness.
-    /// Never used to change admission or eviction by itself.
+    /// How many list recordings sampled it. Normally diagnostics only;
+    /// `VICTORY_TEXTURE_KEEP_HOT=1` is a gated A/B that lets 8+ uses keep the
+    /// buffer through the idle sweep.
     uses: std::sync::atomic::AtomicU64,
     /// How many bytes of the texture's memory were mapped when a list last
     /// recorded an upload of it ([`fill_unlocked`]; 0: not asked).
@@ -141,6 +142,18 @@ pub(crate) fn hotness() -> bool {
     static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
     *ON.get_or_init(|| std::env::var_os("VICTORY_TEXTURE_HOTNESS").is_some_and(|v| v == "1"))
 }
+
+/// Gated behavioral A/B: keep a staging buffer through the idle sweep once
+/// its texture has been sampled by 8+ list recordings. Default off; the A run
+/// uses the same binary with this flag absent. `[X]` No promotion without a
+/// duration-matched A/B and repeated evidence.
+pub(crate) fn keep_hot_staging() -> bool {
+    static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *ON.get_or_init(|| std::env::var_os("VICTORY_TEXTURE_KEEP_HOT").is_some_and(|v| v == "1"))
+}
+
+/// Use count at or above which the gated A/B treats a staging buffer as hot.
+const KEEP_HOT_USES: u64 = 8;
 
 fn hotness_bucket(uses: u64) -> usize {
     match uses {
@@ -685,6 +698,7 @@ pub(crate) fn let_go_idle() {
     let (mut went, mut bytes) = (0u64, 0u64);
     map.retain(|key, s| {
         let keep = Arc::strong_count(s) > 1
+            || (keep_hot_staging() && s.uses.load(Relaxed) >= KEEP_HOT_USES)
             || !crate::host::long_ago(s.used.load(Relaxed), idle_ms, IDLE_FRAMES);
         if !keep {
             LET_GO[0].fetch_add(1, Relaxed);
